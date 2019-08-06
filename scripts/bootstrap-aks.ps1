@@ -1,6 +1,3 @@
-param(
-
-)
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
@@ -84,6 +81,9 @@ UsingScope("Ensure spn") {
 
         az keyvault secret set --vault-name $settings.kv.name --name $settings.terraform.clientSecret --value $terraformSpn.password | Out-Null
     }
+    elseif ($terraformSpnsFound.Count -gt 1) {
+        throw "duplicated app found with name '$($settings.terraform.clientAppName)'"
+    }
     else {
         $terraformSpn = $terraformSpnsFound[0]
     }
@@ -105,6 +105,9 @@ UsingScope("Ensure spn") {
             --scopes=$scopes | ConvertFrom-Json
 
         az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.serverSecret --value $aksServerApp.password | Out-Null
+    }
+    elseif ($aksServerAppsFound.Count -gt 1) {
+        throw "Duplicated app found with name '$($settings.aks.serverApp)'"
     }
     else {
         $aksServerApp = $aksServerAppsFound[0]
@@ -160,6 +163,9 @@ UsingScope("Ensure spn") {
             --reply-urls "http://$($settings.aks.serverApp)" `
             --required-resource-accesses @$clientAuthJsonFile | ConvertFrom-Json
     }
+    elseif ($aksClientAppsFound.Count -gt 1) {
+        throw "Duplicate app found with name '$($settings.aks.clientAppName)'"
+    }
     else {
         $aksClientApp = $aksClientAppsFound[0]
     }
@@ -197,7 +203,7 @@ UsingScope("Ensure SSH key for AKS") {
     }
 
     $sshPubKey = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey | ConvertFrom-Json
-    $sshPubKeyData = ([string][System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sshPubKey.value))).Trim()
+    $sshPubKeyData = ([string][System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sshPubKey.value))).Trim().Replace("\", "\\")
     $settings.aks["nodePublicSshKey"] = $sshPubKeyData
 }
 
@@ -207,10 +213,10 @@ UsingScope("Set deployment key") {
     LogStep -Message "Set deployment key to kv"
     [array]$deployPubKeyFound = az keyvault secret list `
         --vault-name $settings.kv.name `
-        --query "[?name=='$($settings.gitRepo.deployPublicKey)']" | ConvertFrom-Json
+        --query "[?id=='https://$($settings.kv.name).vault.azure.net/secrets/$($settings.gitRepo.deployPublicKey)']" | ConvertFrom-Json
     [array]$deployPrivateKeyFound = az keyvault secret list `
         --vault-name $settings.kv.name `
-        --query "[?name=='$($settings.gitRepo.deployPrivateKey)']" | ConvertFrom-Json
+        --query "[?id=='https://$($settings.kv.name).vault.azure.net/secrets/$($settings.gitRepo.deployPrivateKey)']" | ConvertFrom-Json
     $deploySshKeyFile = Join-Path $tempFolder "flux-deploy-key"
     if (Test-Path $deploySshKeyFile) {
         Remove-Item $deploySshKeyFile -Force
@@ -259,6 +265,6 @@ UsingScope("Setup terraform variables") {
     $env:ARM_TENANT_ID = $azAccount.tenantId
     $env:ARM_CLIENT_SECRET = $terraformSpnPwd.value
     $env:ARM_CLIENT_ID = $terraformSpn.appId
-    terraform plan -var-file=terraform.tfvars
+    terraform plan -var-file="terraform.tfvars"
 }
 
