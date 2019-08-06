@@ -154,9 +154,29 @@ UsingScope("Ensure spn") {
 "@
     $spnAuthJsonFile = Join-Path $tempFolder "aks_server_app_auth.json"
     $authJson | Out-File $spnAuthJsonFile
-    Start-Sleep -Seconds 10 # wait for app become available
-    az ad app update --id $aksServerApp.appId --required-resource-accesses $spnAuthJsonFile | Out-Null
-    az ad app update --id $aksServerApp.appId --reply-urls "http://$($settings.aks.serverApp)" | Out-Null
+
+    $totalRetries = 0
+    $isSuccessful = $false
+    while ($totalRetries -lt 3 -and !$isSuccessful) {
+        try {
+
+            az ad app update --id $aksServerApp.appId --required-resource-accesses $spnAuthJsonFile | Out-Null
+            az ad app update --id $aksServerApp.appId --reply-urls "http://$($settings.aks.serverApp)" | Out-Null
+            $isSuccessful = $true
+        }
+        catch {
+            $isSuccessful = $false
+            LogInfo -Message "retry..."
+            Start-Sleep -Seconds 10 # wait for app become available
+        }
+        finally {
+            $totalRetries++
+        }
+    }
+
+    if (!$isSuccessful) {
+        throw "Failed to update aad app '$($aksServerApp.appId)'"
+    }
 
     LogStep -Message "Ensure AKS Client App"
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json # refresh updated settings
