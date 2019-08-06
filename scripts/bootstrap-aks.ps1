@@ -88,16 +88,9 @@ UsingScope("Ensure spn") {
         $terraformSpn = $terraformSpnsFound[0]
     }
 
-    # secret can be deleted when kv is removed
-    $idQuery = "https://$($settings.kv.name).vault.azure.net/secrets/$($settings.terraform.clientSecret)"
-    [array]$terraformSpnPwdsFound = az keyvault secret list --vault-name $settings.kv.name --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
-    if ($null -eq $terraformSpnPwdsFound -or $terraformSpnPwdsFound.Count -eq 0) {
-        $terraformSpnPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.terraform.clientSecret
-        az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwd.value | Out-Null
-    }
-    else {
-        $terraformSpnPwd = az keyvault secret show --vault-name $settings.kv.name --name $settings.terraform.clientSecret | ConvertFrom-Json
-    }
+    $terraformSpnPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.terraform.clientSecret
+    az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwd.value | Out-Null
+
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId
         pwd   = $terraformSpnPwd.value
@@ -181,16 +174,9 @@ UsingScope("Ensure spn") {
     }
 
     az ad app update --id $aksClientSpn.appId --reply-urls "http://$($settings.aks.serverApp)"
-    $idQuery = "https://$($settings.kv.name).vault.azure.net/secrets/$($settings.aks.serverSecret)"
-    [array]$aksServerAppPwdsFound = az keyvault secret list --vault-name $settings.kv.name --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
+    $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
+    az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwd.value | Out-Null
 
-    if ($null -eq $aksServerAppPwdsFound -or $aksServerAppPwdsFound.Count -eq 0) {
-        $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
-        az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwd.value | Out-Null
-    }
-    else {
-        $aksServerAppPwd = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.serverSecret | ConvertFrom-Json
-    }
     $settings.aks["resourceGroup"] = $settings.global.resourceGroup.name
     $settings.aks["location"] = $settings.global.resourceGroup.location
     $settings.aks["server_app_id"] = $aksServerApp.appId
@@ -255,8 +241,8 @@ UsingScope("Set deployment key") {
         az keyvault secret set --vault-name $settings.kv.name --name $settings.gitRepo.deployPublicKey --file $sshPubKeyFile | Out-Null
     }
     else {
-        az keyvault secret download --vault-name $settings.kv.name --name $settings.gitRepo.deployPrivateKey -e base64 -f $deploySshKeyFile
-        az keyvault secret download --vault-name $settings.kv.name --name $settings.gitRepo.deployPublicKey -e base64 -f $sshPubKeyFile
+        az keyvault secret download --vault-name $settings.kv.name --name $settings.gitRepo.deployPrivateKey -f $deploySshKeyFile
+        az keyvault secret download --vault-name $settings.kv.name --name $settings.gitRepo.deployPublicKey -f $sshPubKeyFile
     }
 
     $settings.gitRepo["deployPrivateKeyFile"] = $deploySshKeyFile.Replace("\", "/")
@@ -297,4 +283,3 @@ UsingScope("Setup terraform variables") {
     LogStep -Message "Apply terraform manifest"
     terraform apply -var-file="terraform.tfvars"
 }
-

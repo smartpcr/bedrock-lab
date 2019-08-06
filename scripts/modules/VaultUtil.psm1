@@ -25,10 +25,7 @@ function Get-OrCreatePasswordInVault {
     }
 
     if (!$secretIsFound) {
-        $prng = [System.Security.Cryptography.RNGCryptoServiceProvider]::Create()
-        $bytes = New-Object Byte[] 30
-        $prng.GetBytes($bytes)
-        $password = [System.Convert]::ToBase64String($bytes) + "!@1wW" #  ensure we meet password requirements
+        $password = [System.Guid]::NewGuid().ToString()
         az keyvault secret set --vault-name $VaultName --name $SecretName --value $password | Out-Null
         $res = az keyvault secret show --vault-name $VaultName --name $SecretName | ConvertFrom-Json
         return $res
