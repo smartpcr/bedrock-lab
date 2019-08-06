@@ -1,0 +1,28 @@
+global:
+  subscriptionName: "RRD MSDN Premium"
+  resourceGroup:
+    name: bedrock-lab
+    location: westus2
+gitRepo:
+  teamOrUser: smartpcr
+  name: myk8s
+  deployPrivateKey: flux-git-deploy-key
+  deployPublicKey: flux-git-deploy-pub
+kv:
+  name: bedrock-lab-kv
+terraform:
+  clientAppName: bedrock-terraform-spn
+  clientSecret: bedrock-terraform-spn-pwd
+aks:
+  serverApp: bedrock-aks-server-app
+  serverSecret: bedrock-aks-spn-pwd
+  clientApp: bedrock-aks-client-app
+  clusterName: bedrock-lab
+  nodeCount: 2
+  vmSize: "Standard_D4s_v3"
+  dnsPrefix: bedrock-lab
+  virtualNetwork: bedrock-vnet
+  ssh:
+    privateKey: "bedrock-aks-ssh-key"
+    publicKey: "bedrock-aks-ssh-pub"
+    privateKeyPwd: "bedrock-aks-ssh-key-pwd"
