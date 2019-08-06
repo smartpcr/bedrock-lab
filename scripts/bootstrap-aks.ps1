@@ -88,11 +88,19 @@ UsingScope("Ensure spn") {
         $terraformSpn = $terraformSpnsFound[0]
     }
 
-    $terraformSpnPwd = az keyvault secret show --vault-name $settings.kv.name --name $settings.terraform.clientSecret | ConvertFrom-Json
-
+    # secret can be deleted when kv is removed
+    $idQuery = "https://$($settings.kv.name).vault.azure.net/secrets/$($settings.terraform.clientSecret)"
+    [array]$terraformSpnPwdsFound = az keyvault secret list --vault-name $settings.kv.name --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
+    if ($null -eq $terraformSpnPwdsFound -or $terraformSpnPwdsFound.Count -eq 0) {
+        $terraformSpnPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.terraform.clientSecret
+        az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwd.value | Out-Null
+    }
+    else {
+        $terraformSpnPwd = az keyvault secret show --vault-name $settings.kv.name --name $settings.terraform.clientSecret | ConvertFrom-Json
+    }
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId
-        pwd = $terraformSpnPwd.value
+        pwd   = $terraformSpnPwd.value
     }
 
     LogStep -Message "Ensure AKS Server App"
@@ -152,8 +160,8 @@ UsingScope("Ensure spn") {
     LogStep -Message "Ensure AKS Client App"
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json # refresh updated settings
     $aksServerApp = $aksServerAppsFound[0]
-    [array]$aksClientAppsFound = az ad sp list --display-name $settings.aks.clientApp | ConvertFrom-Json
-    if ($null -eq $aksClientAppsFound -or $aksClientAppsFound.Count -eq 0) {
+    [array]$aksClientSpnsFound = az ad sp list --display-name $settings.aks.clientApp | ConvertFrom-Json
+    if ($null -eq $aksClientSpnsFound -or $aksClientSpnsFound.Count -eq 0) {
         $resourceAccess = "[{`"resourceAccess`": [{`"id`": `"318f4279-a6d6-497a-8c69-a793bda0d54f`", `"type`": `"Scope`"}],`"resourceAppId`": `"$($aksServerApp.appId)`"}]"
         $clientAuthJsonFile = Join-Path $tempFolder "aks_client_app_auth.json"
         $resourceAccess | Out-File $clientAuthJsonFile
@@ -165,16 +173,24 @@ UsingScope("Ensure spn") {
 
         $aksClientSpn = az ad sp create --id $aksClientApp.appId | ConvertFrom-Json
     }
-    elseif ($aksClientAppsFound.Count -gt 1) {
+    elseif ($aksClientSpnsFound.Count -gt 1) {
         throw "Duplicate app found with name '$($settings.aks.clientAppName)'"
     }
     else {
-        $aksClientSpn = $aksClientAppsFound[0]
+        $aksClientSpn = $aksClientSpnsFound[0]
     }
 
-    az ad app update --id $aksClientApp.appId --reply-urls "http://$($settings.aks.serverApp)"
-    $aksServerAppPwd = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.serverSecret | ConvertFrom-Json
+    az ad app update --id $aksClientSpn.appId --reply-urls "http://$($settings.aks.serverApp)"
+    $idQuery = "https://$($settings.kv.name).vault.azure.net/secrets/$($settings.aks.serverSecret)"
+    [array]$aksServerAppPwdsFound = az keyvault secret list --vault-name $settings.kv.name --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
 
+    if ($null -eq $aksServerAppPwdsFound -or $aksServerAppPwdsFound.Count -eq 0) {
+        $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
+        az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwd.value | Out-Null
+    }
+    else {
+        $aksServerAppPwd = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.serverSecret | ConvertFrom-Json
+    }
     $settings.aks["resourceGroup"] = $settings.global.resourceGroup.name
     $settings.aks["location"] = $settings.global.resourceGroup.location
     $settings.aks["server_app_id"] = $aksServerApp.appId
@@ -195,9 +211,10 @@ UsingScope("Ensure SSH key for AKS") {
     }
 
     $sshKeyPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKeyPwd
-    $sshPrivateKeysFound = az keyvault secret list --vault-name $settings.kv.name --query "[?id=='https://$($settings.kv.name).vault.azure.net/secrets/$($settings.aks.ssh.privateKey)']" | ConvertFrom-Json
+    $sshPrivateKeysFound = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKey
     if ($null -eq $sshPrivateKeysFound -or $sshPrivateKeysFound.Count -eq 0) {
-        ssh-keygen -f $sshKeyFile -P $sshKeyPwd.value
+        $sshKeypassword = $sshKeyPwd.value
+        ssh-keygen -f $sshKeyFile -P $sshKeypassword
         $privateKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshKeyFile))
         az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.privateKey --value $privateKeyString | Out-Null
         $publicKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshPubFile))
@@ -213,12 +230,16 @@ UsingScope("Ensure SSH key for AKS") {
 
 UsingScope("Set deployment key") {
     LogStep -Message "Set deployment key to kv"
+    $idQuery = "https://$($settings.kv.name).vault.azure.net/secrets/$($settings.gitRepo.deployPublicKey)"
     [array]$deployPubKeyFound = az keyvault secret list `
         --vault-name $settings.kv.name `
-        --query "[?id=='https://$($settings.kv.name).vault.azure.net/secrets/$($settings.gitRepo.deployPublicKey)']" | ConvertFrom-Json
+        --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
+
+    $idQuery = "https://$($settings.kv.name).vault.azure.net/secrets/$($settings.gitRepo.deployPrivateKey)"
     [array]$deployPrivateKeyFound = az keyvault secret list `
         --vault-name $settings.kv.name `
-        --query "[?id=='https://$($settings.kv.name).vault.azure.net/secrets/$($settings.gitRepo.deployPrivateKey)']" | ConvertFrom-Json
+        --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
+
     $deploySshKeyFile = Join-Path $tempFolder "flux-deploy-key"
     if (Test-Path $deploySshKeyFile) {
         Remove-Item $deploySshKeyFile -Force
@@ -259,6 +280,11 @@ UsingScope("Setup terraform variables") {
     Copy-Item (Join-Path $bootstrapFolder "main.tf") -Destination (Join-Path $terraformOutputFolder "main.tf") -Force
     Copy-Item (Join-Path $bootstrapFolder "variables.tf") -Destination (Join-Path $terraformOutputFolder "variables.tf") -Force
     Set-Location $terraformOutputFolder
+    $terraformInitFolder = Join-Path $terraformOutputFolder ".terraform"
+    if (Test-Path $terraformInitFolder) {
+        Remove-Item $terraformInitFolder -Recurse -Force
+    }
+
     terraform init
 
     LogStep -Message "Setup terraform env vars"
