@@ -16,8 +16,8 @@ server_app_secret = "{{.Values.aks.server_app_secret}}"
 client_app_id = "{{.Values.aks.client_app_id}}"
 tenant_id = "{{.Values.aks.tenant_id}}"
 ssh_public_key = "{{.Values.aks.nodePublicSshKey}}"
-gitops_ssh_url = "{{.Values.gitOps.repo}}"
-gitops_ssh_key = "{{.Values.gitOps.deployPrivateKeyFile}}"
+gitops_ssh_url = "{{.Values.gitRepo.repo}}"
+gitops_ssh_key = "{{.Values.gitRepo.deployPrivateKeyFile}}"
 vnet_name = "{{.Values.aks.virtualNetwork}}"
 
 #--------------------------------------------------------------

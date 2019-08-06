@@ -152,7 +152,7 @@ UsingScope("Ensure spn") {
     LogStep -Message "Ensure AKS Client App"
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json # refresh updated settings
     $aksServerApp = $aksServerAppsFound[0]
-    [array]$aksClientAppsFound = az ad app list --display-name $settings.aks.clientApp | ConvertFrom-Json
+    [array]$aksClientAppsFound = az ad sp list --display-name $settings.aks.clientApp | ConvertFrom-Json
     if ($null -eq $aksClientAppsFound -or $aksClientAppsFound.Count -eq 0) {
         $resourceAccess = "[{`"resourceAccess`": [{`"id`": `"318f4279-a6d6-497a-8c69-a793bda0d54f`", `"type`": `"Scope`"}],`"resourceAppId`": `"$($aksServerApp.appId)`"}]"
         $clientAuthJsonFile = Join-Path $tempFolder "aks_client_app_auth.json"
@@ -162,12 +162,14 @@ UsingScope("Ensure spn") {
             --native-app `
             --reply-urls "http://$($settings.aks.serverApp)" `
             --required-resource-accesses @$clientAuthJsonFile | ConvertFrom-Json
+
+        $aksClientSpn = az ad sp create --id $aksClientApp.appId | ConvertFrom-Json
     }
     elseif ($aksClientAppsFound.Count -gt 1) {
         throw "Duplicate app found with name '$($settings.aks.clientAppName)'"
     }
     else {
-        $aksClientApp = $aksClientAppsFound[0]
+        $aksClientSpn = $aksClientAppsFound[0]
     }
 
     az ad app update --id $aksClientApp.appId --reply-urls "http://$($settings.aks.serverApp)"
@@ -177,7 +179,7 @@ UsingScope("Ensure spn") {
     $settings.aks["location"] = $settings.global.resourceGroup.location
     $settings.aks["server_app_id"] = $aksServerApp.appId
     $settings.aks["server_app_secret"] = $aksServerAppPwd.value
-    $settings.aks["client_app_id"] = $aksClientApp.appId
+    $settings.aks["client_app_id"] = $aksClientSpn.appId
     $settings.aks["tenant_id"] = $azAccount.tenantId
 }
 
@@ -236,9 +238,8 @@ UsingScope("Set deployment key") {
         az keyvault secret download --vault-name $settings.kv.name --name $settings.gitRepo.deployPublicKey -e base64 -f $sshPubKeyFile
     }
 
-    $settings.gitRepo["deployPrivateKeyFile"] = $deploySshKeyFile
+    $settings.gitRepo["deployPrivateKeyFile"] = $deploySshKeyFile.Replace("\", "/")
     $settings.gitRepo["repo"] = "git@github.com:$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name).git"
-    $settings.gitRepo["gitops_ssh_key"] = $sshPubKeyFile
 }
 
 
