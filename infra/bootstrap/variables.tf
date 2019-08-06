@@ -13,6 +13,11 @@ variable "acr_enabled" {
   default = "true"
 }
 
+variable "gc_enabled" {
+  type    = "string"
+  default = "true"
+}
+
 variable "cluster_name" {
   type = "string"
 }
@@ -44,6 +49,11 @@ variable "gitops_ssh_key" {
 variable "gitops_path" {
   type    = "string"
   default = ""
+}
+
+variable "gitops_url_branch" {
+  type    = "string"
+  default = "master"
 }
 
 variable "resource_group_name" {
@@ -120,6 +130,16 @@ variable "address_space" {
 variable "subnet_prefixes" {
   description = "The address prefix to use for the subnet."
   default     = ["10.10.1.0/24"]
+}
+
+variable "network_policy" {
+  default     = "azure"
+  description = "Network policy to be used with Azure CNI. Either azure or calico."
+}
+
+variable "oms_agent_enabled" {
+  type    = "string"
+  default = "false"
 }
 
 variable "tags" {
