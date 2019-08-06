@@ -1,5 +1,5 @@
 global:
-  subscriptionName: "aamva"
+  subscriptionName: "AAMVA MSDN"
   resourceGroup:
     name: bedrock-lab
     location: westus2

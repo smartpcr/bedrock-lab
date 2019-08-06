@@ -154,6 +154,7 @@ UsingScope("Ensure spn") {
 "@
     $spnAuthJsonFile = Join-Path $tempFolder "aks_server_app_auth.json"
     $authJson | Out-File $spnAuthJsonFile
+    Start-Sleep -Seconds 10 # wait for app become available
     az ad app update --id $aksServerApp.appId --required-resource-accesses $spnAuthJsonFile | Out-Null
     az ad app update --id $aksServerApp.appId --reply-urls "http://$($settings.aks.serverApp)" | Out-Null
 
@@ -260,7 +261,7 @@ UsingScope("Set deployment key") {
     $pubDeployKeyData = (Get-Content $sshPubKeyFile -Encoding Ascii)
     $pubDeployKeyData = $pubDeployKeyData.Trim().Replace("\", "\\")
     Write-Host $pubDeployKeyData
-    Write-Host "`nHit enter when done"
+    Read-Host "`nHit enter when done"
 }
 
 
@@ -290,7 +291,7 @@ UsingScope("Setup terraform variables") {
     LogStep -Message "Setup terraform env vars"
     $env:ARM_SUBSCRIPTION_ID = $azAccount.id
     $env:ARM_TENANT_ID = $azAccount.tenantId
-    $env:ARM_CLIENT_SECRET = $terraformSpnPwd.value
+    $env:ARM_CLIENT_SECRET = $terraformSpnPwdValue
     $env:ARM_CLIENT_ID = $terraformSpn.appId
     terraform plan -var-file="terraform.tfvars"
 
