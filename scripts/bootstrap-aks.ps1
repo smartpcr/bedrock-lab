@@ -90,7 +90,7 @@ UsingScope("Ensure spn") {
         $terraformSpn = $terraformSpnsFound[0]
     }
 
-    if ($null -eq $terraformSpnPwdValue) {
+    if ($null -eq $terraformSpnPwdValue -or $terraformSpnPwdValue.Length -eq 0) {
         $terraformSpnPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.terraform.clientSecret
         $terraformSpnPwdValue = $terraformSpnPwd.value
         az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwdValue | Out-Null
@@ -184,7 +184,7 @@ UsingScope("Ensure spn") {
 
     az ad app update --id $aksClientSpn.appId --reply-urls "http://$($settings.aks.serverApp)"
 
-    if ($null -eq $aksServerAppPwdValue) {
+    if ($null -eq $aksServerAppPwdValue -or $aksServerAppPwdValue.Length -eq 0) {
         $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
         $aksServerAppPwdValue = $aksServerAppPwd.value
         az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwdValue | Out-Null
