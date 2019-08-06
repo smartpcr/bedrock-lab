@@ -152,7 +152,7 @@ UsingScope("Ensure spn") {
     LogStep -Message "Ensure AKS Client App"
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json # refresh updated settings
     $aksServerApp = $aksServerAppsFound[0]
-    [array]$aksClientAppsFound = az ad sp list --display-name $settings.aks.clientApp | ConvertFrom-Json
+    [array]$aksClientAppsFound = az ad app list --display-name $settings.aks.clientApp | ConvertFrom-Json
     if ($null -eq $aksClientAppsFound -or $aksClientAppsFound.Count -eq 0) {
         $resourceAccess = "[{`"resourceAccess`": [{`"id`": `"318f4279-a6d6-497a-8c69-a793bda0d54f`", `"type`": `"Scope`"}],`"resourceAppId`": `"$($aksServerApp.appId)`"}]"
         $clientAuthJsonFile = Join-Path $tempFolder "aks_client_app_auth.json"
@@ -266,5 +266,8 @@ UsingScope("Setup terraform variables") {
     $env:ARM_CLIENT_SECRET = $terraformSpnPwd.value
     $env:ARM_CLIENT_ID = $terraformSpn.appId
     terraform plan -var-file="terraform.tfvars"
+
+    LogStep -Message "Apply terraform manifest"
+    terraform apply -var-file="terraform.tfvars"
 }
 
