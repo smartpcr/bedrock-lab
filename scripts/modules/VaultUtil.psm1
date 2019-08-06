@@ -10,7 +10,7 @@ function Get-OrCreatePasswordInVault {
         --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
 
     $secretIsFound = $false
-    if ($null -ne $secretsFound -or $secretsFound.Count -eq 0) {
+    if ($null -eq $secretsFound -or $secretsFound.Count -eq 0) {
         $secretsFound = $false
     }
     else {
