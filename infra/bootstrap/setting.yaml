@@ -1,13 +1,13 @@
 global:
-  subscriptionName: "RRD MSDN Premium"
+  subscriptionName: "aamva"
   resourceGroup:
     name: bedrock-lab
     location: westus2
 gitRepo:
   teamOrUser: smartpcr
-  name: myk8s
-  deployPrivateKey: flux-git-deploy-key
-  deployPublicKey: flux-git-deploy-pub
+  name: flux-get-started
+  deployPrivateKey: flux-deploy-key
+  deployPublicKey: flux-deploy-pub
 kv:
   name: bedrock-lab-kv
 terraform:
@@ -19,7 +19,7 @@ aks:
   clientApp: bedrock-aks-client-app
   clusterName: bedrock-lab
   nodeCount: 2
-  vmSize: "Standard_D4s_v3"
+  vmSize: "Standard_D2s_v3"
   dnsPrefix: bedrock-lab
   virtualNetwork: bedrock-vnet
   ssh:

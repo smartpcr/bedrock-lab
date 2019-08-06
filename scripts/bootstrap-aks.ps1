@@ -32,8 +32,8 @@ UsingScope("retrieving settings") {
 UsingScope("login") {
     $azAccount = az account show | ConvertFrom-Json
     if ($null -eq $azAccount -or $azAccount.name -ne $settings.global.subscriptionName) {
-        az login
-        az account set -s $settings.global.subscriptionName
+        az login | Out-Null
+        az account set -s $settings.global.subscriptionName | Out-Null
         $azAccount = az account show | ConvertFrom-Json
     }
 
@@ -72,6 +72,7 @@ UsingScope("Ensure spn") {
     LogStep -Message "Ensure Terraform SPN"
 
     [array]$terraformSpnsFound = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
+    [string]$terraformSpnPwdValue = $null
     if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
         $scopes = "/subscriptions/$($azAccount.id)"
         $terraformSpn = az ad sp create-for-rbac `
@@ -79,7 +80,8 @@ UsingScope("Ensure spn") {
             --role="Owner" `
             --scopes=$scopes | ConvertFrom-Json
 
-        az keyvault secret set --vault-name $settings.kv.name --name $settings.terraform.clientSecret --value $terraformSpn.password | Out-Null
+        $terraformSpnPwdValue = $terraformSpn.password
+        az keyvault secret set --vault-name $settings.kv.name --name $settings.terraform.clientSecret --value $terraformSpnPwdValue | Out-Null
     }
     elseif ($terraformSpnsFound.Count -gt 1) {
         throw "duplicated app found with name '$($settings.terraform.clientAppName)'"
@@ -88,15 +90,19 @@ UsingScope("Ensure spn") {
         $terraformSpn = $terraformSpnsFound[0]
     }
 
-    $terraformSpnPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.terraform.clientSecret
-    az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwd.value | Out-Null
+    if ($null -eq $terraformSpnPwdValue) {
+        $terraformSpnPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.terraform.clientSecret
+        $terraformSpnPwdValue = $terraformSpnPwd.value
+        az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwdValue | Out-Null
+    }
 
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId
-        pwd   = $terraformSpnPwd.value
+        pwd   = $terraformSpnPwdValue
     }
 
     LogStep -Message "Ensure AKS Server App"
+    $aksServerAppPwdValue = $null
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json
     if ($null -eq $aksServerAppsFound -or $aksServerAppsFound.Count -eq 0) {
         $scopes = "/subscriptions/$($azAccount.id)"
@@ -105,7 +111,8 @@ UsingScope("Ensure spn") {
             --role="Contributor" `
             --scopes=$scopes | ConvertFrom-Json
 
-        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.serverSecret --value $aksServerApp.password | Out-Null
+        $aksServerAppPwdValue = $aksServerApp.password
+        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.serverSecret --value $aksServerAppPwdValue | Out-Null
     }
     elseif ($aksServerAppsFound.Count -gt 1) {
         throw "Duplicated app found with name '$($settings.aks.serverApp)'"
@@ -153,6 +160,7 @@ UsingScope("Ensure spn") {
     LogStep -Message "Ensure AKS Client App"
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json # refresh updated settings
     $aksServerApp = $aksServerAppsFound[0]
+
     [array]$aksClientSpnsFound = az ad sp list --display-name $settings.aks.clientApp | ConvertFrom-Json
     if ($null -eq $aksClientSpnsFound -or $aksClientSpnsFound.Count -eq 0) {
         $resourceAccess = "[{`"resourceAccess`": [{`"id`": `"318f4279-a6d6-497a-8c69-a793bda0d54f`", `"type`": `"Scope`"}],`"resourceAppId`": `"$($aksServerApp.appId)`"}]"
@@ -174,13 +182,17 @@ UsingScope("Ensure spn") {
     }
 
     az ad app update --id $aksClientSpn.appId --reply-urls "http://$($settings.aks.serverApp)"
-    $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
-    az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwd.value | Out-Null
+
+    if ($null -eq $aksServerAppPwdValue) {
+        $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
+        $aksServerAppPwdValue = $aksServerAppPwd.value
+        az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwdValue | Out-Null
+    }
 
     $settings.aks["resourceGroup"] = $settings.global.resourceGroup.name
     $settings.aks["location"] = $settings.global.resourceGroup.location
     $settings.aks["server_app_id"] = $aksServerApp.appId
-    $settings.aks["server_app_secret"] = $aksServerAppPwd.value
+    $settings.aks["server_app_secret"] = $aksServerAppPwdValue
     $settings.aks["client_app_id"] = $aksClientSpn.appId
     $settings.aks["tenant_id"] = $azAccount.tenantId
 }
@@ -197,15 +209,11 @@ UsingScope("Ensure SSH key for AKS") {
     }
 
     $sshKeyPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKeyPwd
-    $sshPrivateKeysFound = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKey
-    if ($null -eq $sshPrivateKeysFound -or $sshPrivateKeysFound.Count -eq 0) {
-        $sshKeypassword = $sshKeyPwd.value
-        ssh-keygen -f $sshKeyFile -P $sshKeypassword
-        $privateKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshKeyFile))
-        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.privateKey --value $privateKeyString | Out-Null
-        $publicKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshPubFile))
-        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey --value $publicKeyString | Out-Null
-    }
+    ssh-keygen -f $sshKeyFile -P $sshKeyPwd.value
+    $privateKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshKeyFile))
+    az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.privateKey --value $privateKeyString | Out-Null
+    $publicKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshPubFile))
+    az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey --value $publicKeyString | Out-Null
 
     $sshPubKey = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey | ConvertFrom-Json
     $sshPubKeyData = ([string][System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sshPubKey.value))).Trim().Replace("\", "\\")
@@ -247,6 +255,12 @@ UsingScope("Set deployment key") {
 
     $settings.gitRepo["deployPrivateKeyFile"] = $deploySshKeyFile.Replace("\", "/")
     $settings.gitRepo["repo"] = "git@github.com:$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name).git"
+
+    LogStep -Message "Add ssh public key to 'https://github.com/$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name)/settings/keys'"
+    $pubDeployKeyData = (Get-Content $sshPubKeyFile -Encoding Ascii)
+    $pubDeployKeyData = $pubDeployKeyData.Trim().Replace("\", "\\")
+    Write-Host $pubDeployKeyData
+    Write-Host "`nHit enter when done"
 }
 
 
