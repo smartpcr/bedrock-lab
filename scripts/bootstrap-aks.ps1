@@ -68,17 +68,17 @@ UsingScope("Ensure kv") {
     }
 }
 
-UsingScope("Ensure spn") {
-    LogStep -Message "Ensure Terraform SPN"
-
+UsingScope("Ensure terraform spn") {
     [array]$terraformSpnsFound = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
     [string]$terraformSpnPwdValue = $null
     if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
+        $scopes = "/subscriptions/$($azAccount.id)"
         $terraformSpn = az ad sp create-for-rbac `
             --name $settings.terraform.clientAppName `
-            --subscription="$($azAccount.id)" | ConvertFrom-Json
+            --role Owner `
+            --scope $scopes | ConvertFrom-Json
 
-        az role assignment create --assignee $terraformSpn.appId --role Owner --scope "/subscriptions/$($azAccount.id)" | Out-Null
+        az role assignment create --assignee $terraformSpn.appId --role Owner --scope $scopes | Out-Null
         $terraformSpnPwdValue = $terraformSpn.password
         az keyvault secret set --vault-name $settings.kv.name --name $settings.terraform.clientSecret --value $terraformSpnPwdValue | Out-Null
     }
@@ -95,11 +95,19 @@ UsingScope("Ensure spn") {
         az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwdValue | Out-Null
     }
 
+    LogStep -Message "Test service principal credential"
+    $azAccountFromSpn = az login --service-principal --username $terraformSpn.appId --password $terraformSpnPwdValue --tenant $azAccount.id | ConvertFrom-Json
+    if ($null -eq $azAccountFromSpn -or $azAccountFromSpn.id -ne $azAccount.id) {
+        throw "Failed to login"
+    }
+
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId
         pwd   = $terraformSpnPwdValue
     }
+}
 
+UsingScope("Ensure spn") {
     LogStep -Message "Ensure AKS Server App"
     $aksServerAppPwdValue = $null
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json
@@ -305,15 +313,11 @@ UsingScope("Setup terraform variables") {
         Remove-Item $terraformInitFolder -Recurse -Force
     }
 
-    terraform init
+    $terraformShellScriptFile = Join-Path $scriptFolder "bootstrap-aks.sh"
+    $scriptContent = Get-Content $terraformShellScriptFile -Raw
+    $scriptContent = Set-YamlValues -ValueTemplate $scriptContent -Settings $settings
+    $terraformShellFile = Join-Path $terraformOutputFolder "terraform.sh"
+    $scriptContent | Out-File $terraformShellFile -Encoding ascii -Force | Out-Null
 
-    LogStep -Message "Setup terraform env vars"
-    $env:ARM_SUBSCRIPTION_ID = $azAccount.id
-    $env:ARM_TENANT_ID = $azAccount.tenantId
-    $env:ARM_CLIENT_SECRET = $terraformSpnPwdValue
-    $env:ARM_CLIENT_ID = $terraformSpn.appId
-    terraform plan -var-file="terraform.tfvars"
 
-    LogStep -Message "Apply terraform manifest"
-    terraform apply -var-file="terraform.tfvars"
 }
