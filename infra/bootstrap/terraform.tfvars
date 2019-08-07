@@ -21,6 +21,8 @@ gitops_ssh_key = "{{.Values.gitRepo.deployPrivateKeyFile}}"
 vnet_name = "{{.Values.aks.virtualNetwork}}"
 flux_recreate = "true"
 dashboard_cluster_role = "cluster_admin"
+enable_dev_spaces = "true"
+space_name = "xiaodong"
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use
 #--------------------------------------------------------------

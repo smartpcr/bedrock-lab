@@ -145,3 +145,13 @@ variable "oms_agent_enabled" {
 variable "dashboard_cluster_role" {
   type = "string"
 }
+
+variable "enable_dev_spaces" {
+  type    = "string"
+  default = "true"
+}
+
+variable "space_name" {
+  type    = "string"
+  default = "xiaodong"
+}
