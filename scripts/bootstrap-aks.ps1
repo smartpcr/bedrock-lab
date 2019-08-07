@@ -360,9 +360,10 @@ UsingScope("Setup terraform variables") {
     $tfVarContent = Get-Content $tfVarFile -Raw
     $tfVarContent = Set-YamlValues -ValueTemplate $tfVarContent -Settings $settings
     $terraformOutputFolder = Join-Path $tempFolder "terraform"
-    if (-not (Test-Path $terraformOutputFolder)) {
-        New-Item $terraformOutputFolder -ItemType Directory -Force | Out-Null
+    if (Test-Path $terraformOutputFolder) {
+        Remove-Item $terraformOutputFolder -Recurse -Force | Out-Null
     }
+    New-Item $terraformOutputFolder -ItemType Directory -Force | Out-Null
 
     LogStep -Message "Write terraform output to '$terraformOutputFolder'"
     $tfVarContent | Out-File (Join-Path $terraformOutputFolder "terraform.tfvars") -Encoding ascii -Force
