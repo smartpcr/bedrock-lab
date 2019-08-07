@@ -16,6 +16,10 @@ module "vnet" {
   resource_group_location = "${var.resource_group_location}"
   subnet_names            = ["${var.cluster_name}-aks-subnet"]
   subnet_prefixes         = "${var.subnet_prefixes}"
+
+  tags = {
+    environment = "azure-simple"
+  }
 }
 
 module "aks-gitops" {
