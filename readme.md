@@ -12,3 +12,8 @@ In addition, the following modification are made to aks cluster:
 4. dashboard is granted cluster-admin role for non-prod (dev, int) cluster, and reader role for prod cluster
 5. aad users and groups can be granted contributor/reader role in aks cluster
 6. install helm/tiller
+
+## steps
+1. modify `setting.yaml` file to point to your subscription, and where you want it to be created
+2. run `bootstrap-aks.ps1`
+3. navigate to terraform output folder, run `terraform.sh`
