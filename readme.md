@@ -27,7 +27,7 @@ In addition, the following modification are made to aks cluster:
 | 1 | provision flux and aks cluster | yes |
 | 2 | output admin kube config | yes |
 | 3 | integrate aad profile | yes |
-| 4 | additional addons (routing, monitoring, devspaces) | no |
+| 4 | additional addons (routing, monitoring, devspaces) | in-progress |
 | 5 | grant dashboard access | in-progress |
 | 6 | grant additional aad user and groups | in-progress |
 
