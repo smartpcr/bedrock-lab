@@ -267,8 +267,10 @@ UsingScope("Ensure aks client app") {
 
 UsingScope("Ensure aad apps permissions") {
     LogStep -Message "Check aks server app grants"
-    az ad app permission list-grants --id $aksServerApp.appId
     az ad app permission admin-consent --id $aksServerApp.appId
+
+    LogStep -Message "Check aks client app grants"
+    az ad app permission admin-consent --id $aksClientSpn.appId
 }
 
 UsingScope("Ensure SSH key for AKS") {

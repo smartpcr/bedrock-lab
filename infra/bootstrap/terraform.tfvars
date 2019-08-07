@@ -19,7 +19,8 @@ ssh_public_key = "{{.Values.aks.nodePublicSshKey}}"
 gitops_ssh_url = "{{.Values.gitRepo.repo}}"
 gitops_ssh_key = "{{.Values.gitRepo.deployPrivateKeyFile}}"
 vnet_name = "{{.Values.aks.virtualNetwork}}"
-
+flux_recreate = "true"
+dashboard_cluster_role = "cluster_admin"
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use
 #--------------------------------------------------------------

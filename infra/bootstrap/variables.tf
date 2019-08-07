@@ -141,3 +141,7 @@ variable "oms_agent_enabled" {
   type    = "string"
   default = "false"
 }
+
+variable "dashboard_cluster_role" {
+  type = "string"
+}
