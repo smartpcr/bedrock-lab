@@ -53,5 +53,11 @@ module "aks-gitops" {
   docker_cidr              = "${var.docker_cidr}"
   network_policy           = "${var.network_policy}"
   oms_agent_enabled        = "${var.oms_agent_enabled}"
-  dashboard_cluster_role   = "${var.dashboard_cluster_role}"
+}
+
+module "aks-dashboard" {
+  source = "github.com/smartpcr/bedrock/cluster/azure/aks-dashboard"
+
+  dashboard_cluster_role = "${var.dashboard_cluster_role}"
+  output_directory = "${var.output_directory}"
 }
