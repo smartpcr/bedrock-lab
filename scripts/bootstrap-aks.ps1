@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingFile = "aamva"
+    [string] $SettingName = "aamva"
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,11 +27,15 @@ $tempFolder = Join-Path $scriptFolder "temp"
 if (-not (Test-Path $tempFolder)) {
     New-Item $tempFolder -ItemType Directory -Force | Out-Null
 }
+$tempFolder = Join-Path $tempFolder $SettingName
+if (-not (Test-Path $tempFolder)) {
+    New-Item $tempFolder -ItemType Directory -Force | Out-Null
+}
 
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AKS"
 
 UsingScope("retrieving settings") {
-    $settingYamlFile = Join-Path $settingsFolder "$($SettingFile).yaml"
+    $settingYamlFile = Join-Path $settingsFolder "$($SettingName).yaml"
     $settings = Get-Content $settingYamlFile -Raw | ConvertFrom-Yaml
     LogStep -Message "Settings retrieved for '$($settings.global.subscriptionName)'"
 }
@@ -261,6 +265,11 @@ UsingScope("Ensure aks client app") {
     $settings.aks["tenant_id"] = $azAccount.tenantId
 }
 
+UsingScope("Ensure aad apps permissions") {
+    LogStep -Message "Check aks server app grants"
+    az ad app permission list-grants --id $aksServerApp.appId
+    az ad app permission admin-consent --id $aksServerApp.appId
+}
 
 UsingScope("Ensure SSH key for AKS") {
     $sshKeyFile = Join-Path $tempFolder $settings.aks.ssh.privateKey
@@ -315,7 +324,7 @@ UsingScope("Set deployment key") {
         az keyvault secret download --vault-name $settings.kv.name --name $settings.gitRepo.deployPublicKey -f $sshPubKeyFile
     }
 
-    $settings.gitRepo["deployPrivateKeyFile"] = $deploySshKeyFile.Replace("\", "/")
+    $settings.gitRepo["deployPrivateKeyFile"] = TranslateToLinuxFilePath -FilePath $deploySshKeyFile
     $settings.gitRepo["repo"] = "git@github.com:$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name).git"
 
     LogStep -Message "Add ssh public key to 'https://github.com/$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name)/settings/keys'"
@@ -334,9 +343,20 @@ UsingScope("Setup terraform variables") {
     $tfVarContent = Set-YamlValues -ValueTemplate $tfVarContent -Settings $settings
     $terraformOutputFolder = Join-Path $tempFolder "terraform"
     if (Test-Path $terraformOutputFolder) {
-        Remove-Item $terraformOutputFolder -Recurse -Force | Out-Null
+        # do not delete terraform.tfstate file, otherwise it's going to re-create cluster
+        $terraformTempFolder = Join-Path $terraformOutputFolder ".terraform"
+        if (Test-Path $terraformTempFolder) {
+            Remove-Item $terraformTempFolder -Recurse -Force
+        }
+        $generatedOutputFolder = Join-Path $terraformOutputFolder "output"
+        if (Test-Path $generatedOutputFolder) {
+            Remove-Item $generatedOutputFolder -Recurse -Force
+        }
     }
-    New-Item $terraformOutputFolder -ItemType Directory -Force | Out-Null
+    else {
+        New-Item $terraformOutputFolder -ItemType Directory -Force | Out-Null
+    }
+
 
     LogStep -Message "Write terraform output to '$terraformOutputFolder'"
     $tfVarContent | Out-File (Join-Path $terraformOutputFolder "terraform.tfvars") -Encoding ascii -Force

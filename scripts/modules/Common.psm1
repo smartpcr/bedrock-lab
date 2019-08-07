@@ -60,3 +60,20 @@ function LoginAsServicePrincipalUsingPwd {
         --tenant $TenantId | ConvertFrom-Json
     return $azAccountFromSpn
 }
+
+function TranslateToLinuxFilePath() {
+    param(
+        [string]$FilePath = "C:/work/github/container/bedrock-lab/scripts/temp/aamva/flux-deploy-key"
+    )
+
+    $isWindowsOs = ($PSVersionTable.PSVersion.Major -lt 6) -or ($PSVersionTable.Platform -eq "Win32NT")
+    if ($isWindowsOs) {
+        # this is for running inside WSL
+        $FilePath = $FilePath.Replace("\", "/")
+        $driveLetter = Split-Path $FilePath -Qualifier
+        $driveLetter = $driveLetter.TrimEnd(':')
+        return $FilePath.Replace("$($driveLetter):", "/mnt/$($driveLetter.ToLower())")
+    }
+
+    return $FilePath
+}

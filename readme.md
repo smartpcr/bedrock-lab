@@ -17,3 +17,36 @@ In addition, the following modification are made to aks cluster:
 1. modify `setting.yaml` file to point to your subscription, and where you want it to be created
 2. run `bootstrap-aks.ps1`
 3. navigate to terraform output folder, run `terraform.sh`
+
+
+## progress
+
+### Bootstrap
+| order | task | status |
+| -- | -- | -- |
+| 1 | provision flux and aks cluster | yes |
+| 2 | output admin kube config | yes |
+| 3 | integrate aad profile | yes |
+| 4 | additional addons (routing, monitoring, devspaces) | no |
+| 5 | grant dashboard access | in-progress |
+| 6 | grant additional aad user and groups | in-progress |
+
+### HDL for infra
+| order | HDL component | status |
+| -- | -- | -- |
+| 1 | dns zone, nginx, external-dns | no |
+| 2 | prometheus-grafana-alert-manager | no |
+| 3 | fluentd-elasticsearch-kibana | no |
+| 4 | aad-pod-identity | no |
+
+### HDL for services (helm)
+| order | HDL component | status |
+| -- | -- | -- |
+| 1 | prod-catalog-api | no |
+| 2 | prod-catalog-web | no |
+| 3 | prod-catalog-sync-job | no |
+
+### build script to translate HDL to yamls
+| order | task | status |
+| -- | -- | -- |
+| 1 | ADO CI/CD pipeline | no |
