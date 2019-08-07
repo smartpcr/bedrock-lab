@@ -1,7 +1,7 @@
 global:
-  subscriptionName: "AAMVA MSDN"
+  subscriptionName: "RRD MSDN Premium"
   resourceGroup:
-    name: bedrock-lab
+    name: rrdp-bedrock-lab
     location: westus2
 gitRepo:
   teamOrUser: smartpcr
@@ -9,20 +9,20 @@ gitRepo:
   deployPrivateKey: flux-deploy-key
   deployPublicKey: flux-deploy-pub
 kv:
-  name: bedrock-lab-kv
+  name: rrdp-bedrock-kv
 terraform:
-  clientAppName: bedrock-terraform-spn
-  clientSecret: bedrock-terraform-spn-pwd
+  clientAppName: rrdp-bedrock-terraform-spn
+  clientSecret: rrdp-bedrock-terraform-spn-pwd
 aks:
-  serverApp: bedrock-aks-server-app
-  serverSecret: bedrock-aks-spn-pwd
-  clientApp: bedrock-aks-client-app
-  clusterName: bedrock-lab
+  serverApp: rrdp-bedrock-aks-server-app
+  serverSecret: rrdp-bedrock-aks-spn-pwd
+  clientApp: rrdp-bedrock-aks-client-app
+  clusterName: rrdp-bedrock-lab
   nodeCount: 2
   vmSize: "Standard_D2s_v3"
   dnsPrefix: bedrock-lab
   virtualNetwork: bedrock-vnet
   ssh:
-    privateKey: "bedrock-aks-ssh-key"
-    publicKey: "bedrock-aks-ssh-pub"
-    privateKeyPwd: "bedrock-aks-ssh-key-pwd"
+    privateKey: "rrdp-bedrock-aks-ssh-key"
+    publicKey: "rrdp-bedrock-aks-ssh-pub"
+    privateKeyPwd: "rrdp-bedrock-aks-ssh-key-pwd"

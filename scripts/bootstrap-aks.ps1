@@ -13,6 +13,7 @@ if (-not (Test-Path $scriptFolder)) {
 
 $moduleFolder = Join-Path $scriptFolder "modules"
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
+Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
 Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 $tempFolder = Join-Path $scriptFolder "temp"
@@ -27,24 +28,21 @@ UsingScope("retrieving settings") {
     $bootstrapFolder = Join-Path $infraFolder "bootstrap"
     $settingYamlFile = Join-Path $bootstrapFolder "setting.yaml"
     $settings = Get-Content $settingYamlFile -Raw | ConvertFrom-Yaml
+    LogStep -Message "Settings retrieved for '$($settings.global.subscriptionName)'"
 }
 
 UsingScope("login") {
-    $azAccount = az account show | ConvertFrom-Json
-    if ($null -eq $azAccount -or $azAccount.name -ne $settings.global.subscriptionName) {
-        az login | Out-Null
-        az account set -s $settings.global.subscriptionName | Out-Null
-        $azAccount = az account show | ConvertFrom-Json
-    }
-
+    $azAccount = LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName
     $settings.global["subscriptionId"] = $azAccount.id
     $settings.global["tenantId"] = $azAccount.tenantId
+    LogStep -Message "Logged in as user '$($azAccount.name)'"
 }
 
 UsingScope("Ensure resource group") {
     [array]$existingRgs = az group list --query "[?name=='$($settings.global.resourceGroup.name)']" | ConvertFrom-Json
     if ($null -eq $existingRgs -or $existingRgs.Count -eq 0) {
         $rg = az group create -n $settings.global.resourceGroup.name --location $settings.global.resourceGroup.location | ConvertFrom-Json
+        LogStep -Message "Created resource group '$($rg.name)'"
     }
     else {
         $rg = $existingRgs[0]
@@ -62,6 +60,7 @@ UsingScope("Ensure kv") {
             --enabled-for-deployment $true `
             --enabled-for-disk-encryption $true `
             --enabled-for-template-deployment $true | ConvertFrom-Json
+        LogStep -Message "Created key vault '$($kv.name)'"
     }
     else {
         $kv = $existingKvs[0]
@@ -71,16 +70,43 @@ UsingScope("Ensure kv") {
 UsingScope("Ensure terraform spn") {
     [array]$terraformSpnsFound = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
     [string]$terraformSpnPwdValue = $null
+    $certName = $settings.terraform.clientAppName
     if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
-        $scopes = "/subscriptions/$($azAccount.id)"
-        $terraformSpn = az ad sp create-for-rbac `
-            --name $settings.terraform.clientAppName `
-            --role Owner `
-            --scope $scopes | ConvertFrom-Json
+        az ad sp create-for-rbac -n `
+            $settings.terraform.clientAppName `
+            --role contributor `
+            --keyvault $settings.kv.name `
+            --cert $settings.terraform.clientAppName | Out-Null
 
-        az role assignment create --assignee $terraformSpn.appId --role Owner --scope $scopes | Out-Null
-        $terraformSpnPwdValue = $terraformSpn.password
-        az keyvault secret set --vault-name $settings.kv.name --name $settings.terraform.clientSecret --value $terraformSpnPwdValue | Out-Null
+        LogStep -Message "Ensure terraform app cert is created"
+        EnsureCertificateInKeyVault `
+            -VaultName $settings.kv.name `
+            -CertName $certName `
+            -ScriptFolder $ScriptFolder
+
+        LogStep -Message "Create terraform app with cert authentication"
+        az ad sp create-for-rbac `
+            -n $settings.terraform.clientAppName `
+            --role Owner `
+            --keyvault $settings.kv.name `
+            --cert $certName | Out-Null
+
+        LogStep -Message "Create password for terraform app"
+        $terraformSpn = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
+        $terraformSpnPwd = Get-OrCreatePasswordInVault `
+            -VaultName $settings.kv.name `
+            -SecretName $settings.terraform.clientSecret
+        $terraformSpnPwdValue = $terraformSpnPwd.value
+        az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwdValue --append | Out-Null
+
+        LogStep -Message "Granting spn '$($settings.terraform.clientAppName)' 'contributor' role to subscription"
+        $existingAssignments = az role assignment list --assignee $terraformSpn.appId --role Owner --scope "/subscriptions/$($azAccount.id)" | ConvertFrom-Json
+        if ($existingAssignments.Count -eq 0) {
+            az role assignment create --assignee $terraformSpn.appId --role Owner --scope "/subscriptions/$($azAccount.id)" | Out-Null
+        }
+        else {
+            LogInfo -Message "Assignment already exists."
+        }
     }
     elseif ($terraformSpnsFound.Count -gt 1) {
         throw "duplicated app found with name '$($settings.terraform.clientAppName)'"
@@ -95,11 +121,46 @@ UsingScope("Ensure terraform spn") {
         az ad sp credential reset --name $terraformSpn.appId --password $terraformSpnPwdValue | Out-Null
     }
 
-    LogStep -Message "Test service principal credential"
-    $azAccountFromSpn = az login --service-principal --username $terraformSpn.appId --password $terraformSpnPwdValue --tenant $azAccount.id | ConvertFrom-Json
+    $terraformSpn = az ad sp show --id $terraformSpn.appId | ConvertFrom-Json
+    LogStep -Message "Login as service principal using password"
+    $azAccountFromSpn = az login --service-principal `
+        --username "http://$($settings.terraform.clientAppName)" `
+        --password $terraformSpnPwdValue `
+        --tenant $azAccount.tenantId | ConvertFrom-Json
+    LogInfo -Message "Can login as service principal using password"
+    LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName
+
+
+    # LogStep -Message "Login as service principal using certificate"
+    # $credentialFolder = Join-Path $ScriptFolder "credential"
+    # if (-not (Test-Path $credentialFolder)) {
+    #     New-Item $credentialFolder -ItemType Directory -Force | Out-Null
+    # }
+    # $pfxCertFile = Join-Path $credentialFolder "$certName.pfx"
+    # $pemCertFile = Join-Path $credentialFolder "$certName.pem"
+    # $keyCertFile = Join-Path $credentialFolder "$certName.key"
+    # if (Test-Path $pfxCertFile) {
+    #     Remove-Item $pfxCertFile
+    # }
+    # if (Test-Path $pemCertFile) {
+    #     Remove-Item $pemCertFile
+    # }
+    # if (Test-Path $keyCertFile) {
+    #     Remove-Item $keyCertFile
+    # }
+    # az keyvault secret download --vault-name $settings.kv.name -n $certName -e base64 -f $pfxCertFile
+    # openssl pkcs12 -in $pfxCertFile -clcerts -nodes -out $keyCertFile -passin pass:
+    # openssl rsa -in $keyCertFile -out $pemCertFile
+    # $azAccountFromSpn = az login --service-principal `
+    #     -u "http://$($settings.terraform.clientAppName)" `
+    #     -p $keyCertFile `
+    #     --tenant $azAccount.tenantId | ConvertFrom-Json
+    # LogInfo -Message "Can login as service principal using cert"
+
     if ($null -eq $azAccountFromSpn -or $azAccountFromSpn.id -ne $azAccount.id) {
         throw "Failed to login"
     }
+
 
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId
@@ -318,6 +379,4 @@ UsingScope("Setup terraform variables") {
     $scriptContent = Set-YamlValues -ValueTemplate $scriptContent -Settings $settings
     $terraformShellFile = Join-Path $terraformOutputFolder "terraform.sh"
     $scriptContent | Out-File $terraformShellFile -Encoding ascii -Force | Out-Null
-
-
 }
