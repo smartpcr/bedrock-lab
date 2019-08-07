@@ -77,12 +77,6 @@ UsingScope("Ensure terraform spn") {
     [string]$terraformSpnPwdValue = $null
     $certName = $settings.terraform.clientAppName
     if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
-        az ad sp create-for-rbac -n `
-            $settings.terraform.clientAppName `
-            --role contributor `
-            --keyvault $settings.kv.name `
-            --cert $settings.terraform.clientAppName | Out-Null
-
         LogStep -Message "Ensure terraform app cert is created"
         EnsureCertificateInKeyVault `
             -VaultName $settings.kv.name `
@@ -141,7 +135,7 @@ UsingScope("Ensure terraform spn") {
     }
 
     LogInfo -Message "Switch back to user mode"
-    LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName
+    LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName | Out-Null
 
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId

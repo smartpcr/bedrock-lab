@@ -1,5 +1,5 @@
 module "provider" {
-  source = "github.com/Microsoft/bedrock/cluster/azure/provider"
+  source = "github.com/smartpcr/bedrock/cluster/azure/provider"
 }
 
 resource "azurerm_resource_group" "cluster_rg" {
@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "cluster_rg" {
 }
 
 module "vnet" {
-  source = "github.com/Microsoft/bedrock/cluster/azure/vnet"
+  source = "github.com/smartpcr/bedrock/cluster/azure/vnet"
 
   vnet_name               = "${var.vnet_name}"
   address_space           = "${var.address_space}"
@@ -23,7 +23,7 @@ module "vnet" {
 }
 
 module "aks-gitops" {
-  source = "github.com/Microsoft/bedrock/cluster/azure/aks-gitops"
+  source = "github.com/smartpcr/bedrock/cluster/azure/aks-gitops"
 
   acr_enabled              = "${var.acr_enabled}"
   agent_vm_count           = "${var.agent_vm_count}"
@@ -43,6 +43,10 @@ module "aks-gitops" {
   resource_group_name      = "${azurerm_resource_group.cluster_rg.name}"
   service_principal_id     = "${var.service_principal_id}"
   service_principal_secret = "${var.service_principal_secret}"
+  server_app_id            = "${var.server_app_id}"
+  server_app_secret        = "${var.server_app_secret}"
+  client_app_id            = "${var.client_app_id}"
+  tenant_id                = "${var.tenant_id}"
   vnet_subnet_id           = "${module.vnet.vnet_subnet_ids[0]}"
   service_cidr             = "${var.service_cidr}"
   dns_ip                   = "${var.dns_ip}"
