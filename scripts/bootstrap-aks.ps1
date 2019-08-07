@@ -76,9 +76,9 @@ UsingScope("Ensure spn") {
     if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
         $terraformSpn = az ad sp create-for-rbac `
             --name $settings.terraform.clientAppName `
-            --subscription=$($azAccount.id) | ConvertFrom-Json
+            --subscription="$($azAccount.id)" | ConvertFrom-Json
 
-        az role assignment create --assignee $terraformSpn.appId --role Owner --scope "/subscriptions/$($azureAccount.id)" | Out-Null
+        az role assignment create --assignee $terraformSpn.appId --role Owner --scope "/subscriptions/$($azAccount.id)" | Out-Null
         $terraformSpnPwdValue = $terraformSpn.password
         az keyvault secret set --vault-name $settings.kv.name --name $settings.terraform.clientSecret --value $terraformSpnPwdValue | Out-Null
     }
