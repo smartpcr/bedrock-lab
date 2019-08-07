@@ -18,26 +18,45 @@ function LoginAzureAsUser {
     return $currentAccount
 }
 
-function LoginAsServicePrincipal {
+function LoginAsServicePrincipalUsingCert {
     param (
-        [string] $EnvName = "dev",
-        [string] $SpaceName = "xiaodoli",
-        [string] $EnvRootFolder
+        [string] $VaultName,
+        [string] $CertName,
+        [string] $ServicePrincipalName,
+        [string] $TenantId,
+        [string] $ScriptFolder
     )
 
-    $bootstrapValues = Get-EnvironmentSettings -EnvName $EnvName -SpaceName $SpaceName -EnvRootFolder $EnvRootFolder
-    $azAccount = LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName
-    $vaultName = $bootstrapValues.kv.name
-    $spnName = $bootstrapValues.global.servicePrincipal
-    $certName = $spnName
-    $tenantId = $azAccount.tenantId
-
-    $privateKeyFilePath = "$EnvRootFolder/credential/$certName.key"
+    $credentialFolder = Join-Path $ScriptFolder "credential"
+    if (-not (Test-Path $credentialFolder)) {
+        New-Item $credentialFolder -ItemType Directory -Force | Out-Null
+    }
+    $privateKeyFilePath = Join-Path $credentialFolder "$certName.key"
     if (-not (Test-Path $privateKeyFilePath)) {
         LoginAzureAsUser -SubscriptionName $bootstrapValues.global.subscriptionName | Out-Null
-        DownloadCertFromKeyVault -VaultName $vaultName -CertName $certName -EnvRootFolder $EnvRootFolder
+        DownloadCertFromKeyVault -VaultName $vaultName -CertName $certName -ScriptFolder $ScriptFolder
     }
 
-    LogInfo -Message "Login as service principal '$spnName'"
-    az login --service-principal -u "http://$spnName" -p $privateKeyFilePath --tenant $tenantId | Out-Null
+    LogInfo -Message "Login as service principal '$ServicePrincipalName'"
+    $azAccountFromSpn = az login --service-principal `
+        -u "http://$ServicePrincipalName" `
+        -p $privateKeyFilePath `
+        --tenant $TenantId | ConvertFrom-Json
+    return $azAccountFromSpn
+}
+
+function LoginAsServicePrincipalUsingPwd {
+    param (
+        [string] $VaultName,
+        [string] $SecretName,
+        [string] $ServicePrincipalName,
+        [string] $TenantId
+    )
+
+    $clientSecret = az keyvault secret show --vault-name $VaultName --name $SecretName | ConvertFrom-Json
+    $azAccountFromSpn = az login --service-principal `
+        --username "http://$ServicePrincipalName" `
+        --password $clientSecret.value `
+        --tenant $TenantId | ConvertFrom-Json
+    return $azAccountFromSpn
 }

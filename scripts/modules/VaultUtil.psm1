@@ -50,3 +50,31 @@ function EnsureCertificateInKeyVault {
         az keyvault certificate create -n $CertName --vault-name $vaultName -p @$defaultPolicyFile | Out-Null
     }
 }
+
+function DownloadCertFromKeyVault {
+    param(
+        [string]$VaultName,
+        [string]$CertName,
+        [string]$ScriptFolder
+    )
+
+    $credentialFolder = Join-Path $ScriptFolder "credential"
+    if (-not (Test-Path $credentialFolder)) {
+        New-Item $credentialFolder -ItemType Directory -Force | Out-Null
+    }
+    $pfxCertFile = Join-Path $credentialFolder "$CertName.pfx"
+    $pemCertFile = Join-Path $credentialFolder "$CertName.pem"
+    $keyCertFile = Join-Path $credentialFolder "$CertName.key"
+    if (Test-Path $pfxCertFile) {
+        Remove-Item $pfxCertFile
+    }
+    if (Test-Path $pemCertFile) {
+        Remove-Item $pemCertFile
+    }
+    if (Test-Path $keyCertFile) {
+        Remove-Item $keyCertFile
+    }
+    az keyvault secret download --vault-name $settings.kv.name -n $CertName -e base64 -f $pfxCertFile
+    openssl pkcs12 -in $pfxCertFile -clcerts -nodes -out $keyCertFile -passin pass:
+    openssl rsa -in $keyCertFile -out $pemCertFile
+}

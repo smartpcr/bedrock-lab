@@ -1,4 +1,8 @@
 
+param(
+    [string] $SettingFile = "aamva"
+)
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
@@ -10,6 +14,9 @@ $scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
+$infraFolder = Join-Path $gitRootFolder "infra"
+$settingsFolder = Join-Path $infraFolder "settings"
+$bootstrapFolder = Join-Path $infraFolder "bootstrap"
 
 $moduleFolder = Join-Path $scriptFolder "modules"
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
@@ -24,9 +31,7 @@ if (-not (Test-Path $tempFolder)) {
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AKS"
 
 UsingScope("retrieving settings") {
-    $infraFolder = Join-Path $gitRootFolder "infra"
-    $bootstrapFolder = Join-Path $infraFolder "bootstrap"
-    $settingYamlFile = Join-Path $bootstrapFolder "setting.yaml"
+    $settingYamlFile = Join-Path $settingsFolder "$($SettingFile).yaml"
     $settings = Get-Content $settingYamlFile -Raw | ConvertFrom-Yaml
     LogStep -Message "Settings retrieved for '$($settings.global.subscriptionName)'"
 }
@@ -122,45 +127,21 @@ UsingScope("Ensure terraform spn") {
     }
 
     $terraformSpn = az ad sp show --id $terraformSpn.appId | ConvertFrom-Json
-    LogStep -Message "Login as service principal using password"
-    $azAccountFromSpn = az login --service-principal `
-        --username "http://$($settings.terraform.clientAppName)" `
-        --password $terraformSpnPwdValue `
-        --tenant $azAccount.tenantId | ConvertFrom-Json
-    LogInfo -Message "Can login as service principal using password"
-    LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName
-
-
-    # LogStep -Message "Login as service principal using certificate"
-    # $credentialFolder = Join-Path $ScriptFolder "credential"
-    # if (-not (Test-Path $credentialFolder)) {
-    #     New-Item $credentialFolder -ItemType Directory -Force | Out-Null
-    # }
-    # $pfxCertFile = Join-Path $credentialFolder "$certName.pfx"
-    # $pemCertFile = Join-Path $credentialFolder "$certName.pem"
-    # $keyCertFile = Join-Path $credentialFolder "$certName.key"
-    # if (Test-Path $pfxCertFile) {
-    #     Remove-Item $pfxCertFile
-    # }
-    # if (Test-Path $pemCertFile) {
-    #     Remove-Item $pemCertFile
-    # }
-    # if (Test-Path $keyCertFile) {
-    #     Remove-Item $keyCertFile
-    # }
-    # az keyvault secret download --vault-name $settings.kv.name -n $certName -e base64 -f $pfxCertFile
-    # openssl pkcs12 -in $pfxCertFile -clcerts -nodes -out $keyCertFile -passin pass:
-    # openssl rsa -in $keyCertFile -out $pemCertFile
-    # $azAccountFromSpn = az login --service-principal `
-    #     -u "http://$($settings.terraform.clientAppName)" `
-    #     -p $keyCertFile `
-    #     --tenant $azAccount.tenantId | ConvertFrom-Json
-    # LogInfo -Message "Can login as service principal using cert"
-
+    LogStep -Message "Test service principal using password"
+    $azAccountFromSpn = LoginAsServicePrincipalUsingPwd `
+        -VaultName $settings.kv.name `
+        -SecretName $settings.terraform.clientSecret `
+        -ServicePrincipalName $settings.terraform.clientAppName `
+        -TenantId $azAccount.tenantId
     if ($null -eq $azAccountFromSpn -or $azAccountFromSpn.id -ne $azAccount.id) {
         throw "Failed to login"
     }
+    else {
+        LogInfo -Message "Logged in as '$($azAccountFromSpn.name)'"
+    }
 
+    LogInfo -Message "Switch back to user mode"
+    LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName
 
     $settings.terraform["spn"] = @{
         appId = $terraformSpn.appId
@@ -168,8 +149,7 @@ UsingScope("Ensure terraform spn") {
     }
 }
 
-UsingScope("Ensure spn") {
-    LogStep -Message "Ensure AKS Server App"
+UsingScope("Ensure aks server app") {
     $aksServerAppPwdValue = $null
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json
     if ($null -eq $aksServerAppsFound -or $aksServerAppsFound.Count -eq 0) {
@@ -245,8 +225,9 @@ UsingScope("Ensure spn") {
     if (!$isSuccessful) {
         throw "Failed to update aad app '$($aksServerApp.appId)'"
     }
+}
 
-    LogStep -Message "Ensure AKS Client App"
+UsingScope("Ensure aks client app") {
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json # refresh updated settings
     $aksServerApp = $aksServerAppsFound[0]
 
@@ -308,8 +289,6 @@ UsingScope("Ensure SSH key for AKS") {
     $sshPubKeyData = ([string][System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sshPubKey.value))).Trim().Replace("\", "\\")
     $settings.aks["nodePublicSshKey"] = $sshPubKeyData
 }
-
-
 
 UsingScope("Set deployment key") {
     LogStep -Message "Set deployment key to kv"

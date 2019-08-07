@@ -1,0 +1,28 @@
+global:
+  subscriptionName: "AAMVA MSDN"
+  resourceGroup:
+    name: aama-bedrock-lab
+    location: westus2
+gitRepo:
+  teamOrUser: smartpcr
+  name: flux-get-started
+  deployPrivateKey: flux-deploy-key
+  deployPublicKey: flux-deploy-pub
+kv:
+  name: aama-bedrock-kv
+terraform:
+  clientAppName: aama-bedrock-terraform-spn
+  clientSecret: aama-bedrock-terraform-spn-pwd
+aks:
+  serverApp: aama-bedrock-aks-server-app
+  serverSecret: aama-bedrock-aks-spn-pwd
+  clientApp: aama-bedrock-aks-client-app
+  clusterName: aama-bedrock-lab
+  nodeCount: 2
+  vmSize: "Standard_D2s_v3"
+  dnsPrefix: bedrock-lab
+  virtualNetwork: bedrock-vnet
+  ssh:
+    privateKey: "aama-bedrock-aks-ssh-key"
+    publicKey: "aama-bedrock-aks-ssh-pub"
+    privateKeyPwd: "aama-bedrock-aks-ssh-key-pwd"
