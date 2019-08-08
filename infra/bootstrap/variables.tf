@@ -26,6 +26,11 @@ variable "dns_prefix" {
   type = "string"
 }
 
+variable "enable_flux" {
+  type    = "string"
+  default = "true"
+}
+
 variable "flux_recreate" {
   description = "Make any change to this value to trigger the recreation of the flux execution script."
   type        = "string"

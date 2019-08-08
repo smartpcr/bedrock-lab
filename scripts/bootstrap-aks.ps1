@@ -352,14 +352,10 @@ UsingScope("Setup terraform variables") {
     $tfVarContent = Set-YamlValues -ValueTemplate $tfVarContent -Settings $settings
     $terraformOutputFolder = Join-Path $tempFolder "terraform"
     if (Test-Path $terraformOutputFolder) {
-        # do not delete terraform.tfstate file, otherwise it's going to re-create cluster
+        # keep terraform.tfstate, kubeconfig, otherwise it's going to re-create cluster or trying to connect to localhost
         $terraformTempFolder = Join-Path $terraformOutputFolder ".terraform"
         if (Test-Path $terraformTempFolder) {
             Remove-Item $terraformTempFolder -Recurse -Force
-        }
-        $generatedOutputFolder = Join-Path $terraformOutputFolder "output"
-        if (Test-Path $generatedOutputFolder) {
-            Remove-Item $generatedOutputFolder -Recurse -Force
         }
     }
     else {

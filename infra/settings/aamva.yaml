@@ -5,7 +5,7 @@ global:
     location: westus2
 gitRepo:
   teamOrUser: smartpcr
-  name: flux-get-started
+  name: git-deploy
   deployPrivateKey: flux-deploy-key
   deployPublicKey: flux-deploy-pub
 kv:

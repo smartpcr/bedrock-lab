@@ -30,6 +30,7 @@ module "aks-gitops" {
   agent_vm_size            = "${var.agent_vm_size}"
   cluster_name             = "${var.cluster_name}"
   dns_prefix               = "${var.dns_prefix}"
+  enable_flux              = "${var.enable_flux}"
   flux_recreate            = "${var.flux_recreate}"
   kubeconfig_recreate      = "${var.kubeconfig_recreate}"
   gc_enabled               = "${var.gc_enabled}"
