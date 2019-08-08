@@ -1,4 +1,8 @@
 
+param(
+    [string] $SettingName = "aamva"
+)
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
@@ -10,7 +14,13 @@ $scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
+$infraFolder = Join-Path $gitRootFolder "infra"
+$settingsFolder = Join-Path $infraFolder "settings"
 $tempFolder = Join-Path $scriptFolder "temp"
+if (-not (Test-Path $tempFolder)) {
+    New-Item $tempFolder -ItemType Directory -Force | Out-Null
+}
+$tempFolder = Join-Path $tempFolder $SettingName
 if (-not (Test-Path $tempFolder)) {
     New-Item $tempFolder -ItemType Directory -Force | Out-Null
 }
@@ -23,10 +33,9 @@ InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Connect-AKS"
 
 
 UsingScope("retrieving settings") {
-    $infraFolder = Join-Path $gitRootFolder "infra"
-    $bootstrapFolder = Join-Path $infraFolder "bootstrap"
-    $settingYamlFile = Join-Path $bootstrapFolder "setting.yaml"
+    $settingYamlFile = Join-Path $settingsFolder "$($SettingName).yaml"
     $settings = Get-Content $settingYamlFile -Raw | ConvertFrom-Yaml
+    LogStep -Message "Settings retrieved for '$($settings.global.subscriptionName)'"
 }
 
 
@@ -51,7 +60,7 @@ UsingScope("Connect to aks") {
 
 
 UsingScope("Open dashboard") {
-    $Port = 8082 
+    $Port = 8082
     $isWindowsOs = ($PSVersionTable.PSVersion.Major -lt 6) -or ($PSVersionTable.Platform -eq "Win32NT")
     $isUnix = $PSVersionTable.Contains("Platform") -and ($PSVersionTable.Platform -eq "Unix")
     $isMac = $PSVersionTable.Contains("Platform") -and ($PSVersionTable.OS.Contains("Darwin"))

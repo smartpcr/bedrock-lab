@@ -27,9 +27,10 @@ In addition, the following modification are made to aks cluster:
 | 1 | provision flux and aks cluster | yes |
 | 2 | output admin kube config | yes |
 | 3 | integrate aad profile | yes |
-| 4 | additional addons (routing, monitoring, devspaces) | in-progress |
-| 5 | grant dashboard access | in-progress |
+| 4 | additional addons (routing, monitoring, devspaces) | yes |
+| 5 | grant dashboard access | yes |
 | 6 | grant additional aad user and groups | in-progress |
+| 7 | update deploy-key, repo-url in flux settings and enable sync | no |
 
 ### HDL for infra
 | order | HDL component | status |
@@ -38,6 +39,9 @@ In addition, the following modification are made to aks cluster:
 | 2 | prometheus-grafana-alert-manager | no |
 | 3 | fluentd-elasticsearch-kibana | no |
 | 4 | aad-pod-identity | no |
+| 5 | cosmosdb | no |
+| 6 | servicebus, kafka | no |
+| 7 | jaeger, app-insights | no |
 
 ### HDL for services (helm)
 | order | HDL component | status |
