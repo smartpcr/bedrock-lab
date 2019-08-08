@@ -1,0 +1,28 @@
+global:
+  subscriptionName: "RRD MSDN Ultimate"
+  resourceGroup:
+    name: rrdu-bedrock-lab
+    location: westus2
+gitRepo:
+  teamOrUser: smartpcr
+  name: git-deploy
+  deployPrivateKey: flux-deploy-key
+  deployPublicKey: flux-deploy-pub
+kv:
+  name: rrdu-bedrock-kv
+terraform:
+  clientAppName: rrdu-bedrock-terraform-spn
+  clientSecret: rrdu-bedrock-terraform-spn-pwd
+aks:
+  serverApp: rrdu-bedrock-aks-server-app
+  serverSecret: rrdu-bedrock-aks-spn-pwd
+  clientApp: rrdu-bedrock-aks-client-app
+  clusterName: rrdu-bedrock-lab
+  nodeCount: 2
+  vmSize: "Standard_D2s_v3"
+  dnsPrefix: rrdu
+  virtualNetwork: rrdu-bedrock-lab-vnet
+  ssh:
+    privateKey: "rrdu-bedrock-aks-ssh-key"
+    publicKey: "rrdu-bedrock-aks-ssh-pub"
+    privateKeyPwd: "rrdu-bedrock-aks-ssh-key-pwd"

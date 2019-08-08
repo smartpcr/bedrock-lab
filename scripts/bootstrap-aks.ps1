@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingName = "aamva"
+    [string] $SettingName = "rrdu"
 )
 
 $ErrorActionPreference = "Stop"
@@ -126,6 +126,8 @@ UsingScope("Ensure terraform spn") {
 
     $terraformSpn = az ad sp show --id $terraformSpn.appId | ConvertFrom-Json
     LogStep -Message "Test service principal using password"
+    # LogInfo -Message "Wait 15 seconds till terraform app is populated"
+    # Start-Sleep -Seconds 15
     $azAccountFromSpn = LoginAsServicePrincipalUsingPwd `
         -VaultName $settings.kv.name `
         -SecretName $settings.terraform.clientSecret `
@@ -274,24 +276,29 @@ UsingScope("Ensure aad apps permissions") {
 }
 
 UsingScope("Ensure SSH key for AKS") {
-    $sshKeyFile = Join-Path $tempFolder $settings.aks.ssh.privateKey
-    $sshPubFile = $sshKeyFile + ".pub"
-    if (Test-Path $sshKeyFile) {
-        Remove-Item $sshKeyFile
+    $nodeSshKeyFile = Join-Path $tempFolder $settings.aks.ssh.privateKey
+    $nodeSshPubFile = $nodeSshKeyFile + ".pub"
+    if (Test-Path $nodeSshKeyFile) {
+        Remove-Item $nodeSshKeyFile
     }
-    if (Test-Path $sshPubFile) {
-        Remove-Item $sshPubFile
+    if (Test-Path $nodeSshPubFile) {
+        Remove-Item $nodeSshPubFile
     }
 
-    $sshKeyPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKeyPwd
-    ssh-keygen -f $sshKeyFile -P $sshKeyPwd.value
-    $privateKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshKeyFile))
-    az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.privateKey --value $privateKeyString | Out-Null
-    $publicKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($sshPubFile))
-    az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey --value $publicKeyString | Out-Null
+    $nodeSshKeyPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKeyPwd
+    $nodeSshKeySecret = TryGetSecret -VaultName $settings.kv.name -SecretName $settings.aks.ssh.privateKey
+    $nodeSshPubSecret = TryGetSecret -VaultName $settings.kv.name -SecretName $settings.aks.ssh.publicKey
+    if ($null -eq $nodeSshKeySecret -or $null -eq $nodeSshPubSecret) {
+        ssh-keygen -f $nodeSshKeyFile -P $nodeSshKeyPwd.value
+        $privateKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($nodeSshKeyFile))
+        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.privateKey --value $privateKeyString | Out-Null
+        $publicKeyString = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($nodeSshPubFile))
+        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey --value $publicKeyString | Out-Null
 
-    $sshPubKey = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey | ConvertFrom-Json
-    $sshPubKeyData = ([string][System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($sshPubKey.value))).Trim().Replace("\", "\\")
+        $nodeSshPubSecret = az keyvault secret show --vault-name $settings.kv.name --name $settings.aks.ssh.publicKey | ConvertFrom-Json
+    }
+
+    $sshPubKeyData = ([string][System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($nodeSshPubSecret.value))).Trim().Replace("\", "\\")
     $settings.aks["nodePublicSshKey"] = $sshPubKeyData
 }
 

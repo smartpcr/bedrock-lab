@@ -78,3 +78,29 @@ function DownloadCertFromKeyVault {
     openssl pkcs12 -in $pfxCertFile -clcerts -nodes -out $keyCertFile -passin pass:
     openssl rsa -in $keyCertFile -out $pemCertFile
 }
+
+function TryGetSecret() {
+    param(
+        [string]$VaultName,
+        [string]$SecretName
+    )
+
+    $idQuery = "https://$($VaultName).vault.azure.net/secrets/$($SecretName)"
+    [array]$secretsFound = az keyvault secret list `
+        --vault-name $VaultName `
+        --query "[?starts_with(id, '$idQuery')]" | ConvertFrom-Json
+    $secretIsFound = $false
+    if ($null -eq $secretsFound -or $secretsFound.Count -eq 0) {
+        $secretsFound = $false
+    }
+    else {
+        $secretIsFound = $true
+    }
+
+    if ($secretIsFound) {
+        $secret = az keyvault secret show --vault-name $VaultName --name $SecretName | ConvertFrom-Json
+        return $secret
+    }
+
+    return $null 
+}
