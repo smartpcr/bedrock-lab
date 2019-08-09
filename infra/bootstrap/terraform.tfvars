@@ -24,6 +24,11 @@ flux_recreate = "true"
 dashboard_cluster_role = "cluster_admin"
 enable_dev_spaces = "true"
 space_name = "xiaodong"
+
+aks_owners = "{{.Values.aks.roleAssignments.ownerObjectIds}}"
+aks_contributors = "{{.Values.aks.roleAssignments.contributorObjectIds}}"
+aks_readers = "{{.Values.aks.roleAssignments.readerObjectIds}}"
+
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use
 #--------------------------------------------------------------

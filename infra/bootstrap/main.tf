@@ -25,20 +25,7 @@ module "vnet" {
 module "aks-gitops" {
   source = "github.com/smartpcr/bedrock/cluster/azure/aks-gitops"
 
-  acr_enabled              = "${var.acr_enabled}"
-  agent_vm_count           = "${var.agent_vm_count}"
-  agent_vm_size            = "${var.agent_vm_size}"
-  cluster_name             = "${var.cluster_name}"
-  dns_prefix               = "${var.dns_prefix}"
-  enable_flux              = "${var.enable_flux}"
-  flux_recreate            = "${var.flux_recreate}"
-  kubeconfig_recreate      = "${var.kubeconfig_recreate}"
-  gc_enabled               = "${var.gc_enabled}"
-  gitops_ssh_url           = "${var.gitops_ssh_url}"
-  gitops_ssh_key           = "${var.gitops_ssh_key}"
-  gitops_path              = "${var.gitops_path}"
-  gitops_poll_interval     = "${var.gitops_poll_interval}"
-  gitops_url_branch        = "${var.gitops_url_branch}"
+  # aks cluster
   ssh_public_key           = "${var.ssh_public_key}"
   resource_group_location  = "${var.resource_group_location}"
   resource_group_name      = "${azurerm_resource_group.cluster_rg.name}"
@@ -48,6 +35,10 @@ module "aks-gitops" {
   server_app_secret        = "${var.server_app_secret}"
   client_app_id            = "${var.client_app_id}"
   tenant_id                = "${var.tenant_id}"
+  agent_vm_count           = "${var.agent_vm_count}"
+  agent_vm_size            = "${var.agent_vm_size}"
+  cluster_name             = "${var.cluster_name}"
+  dns_prefix               = "${var.dns_prefix}"
   vnet_subnet_id           = "${module.vnet.vnet_subnet_ids[0]}"
   service_cidr             = "${var.service_cidr}"
   dns_ip                   = "${var.dns_ip}"
@@ -57,4 +48,22 @@ module "aks-gitops" {
   enable_dev_spaces        = "${var.enable_dev_spaces}"
   space_name               = "${var.space_name}"
   dashboard_cluster_role   = "${var.dashboard_cluster_role}"
+
+  # aks role assignment
+  aks_owners       = "${var.aks_owners}"
+  aks_contributors = "${var.aks_contributors}"
+  aks_readers      = "${var.aks_readers}"
+  
+  # flux
+  enable_flux          = "${var.enable_flux}"
+  flux_recreate        = "${var.flux_recreate}"
+  kubeconfig_recreate  = "${var.kubeconfig_recreate}"
+  gc_enabled           = "${var.gc_enabled}"
+  acr_enabled          = "${var.acr_enabled}"
+  gitops_ssh_url       = "${var.gitops_ssh_url}"
+  gitops_ssh_key       = "${var.gitops_ssh_key}"
+  gitops_path          = "${var.gitops_path}"
+  gitops_poll_interval = "${var.gitops_poll_interval}"
+  gitops_url_branch    = "${var.gitops_url_branch}"
+
 }

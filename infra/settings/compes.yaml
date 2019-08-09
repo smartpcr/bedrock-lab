@@ -27,3 +27,12 @@ aks:
     privateKey: "compes-bedrock-aks-ssh-key"
     publicKey: "compes-bedrock-aks-ssh-pub"
     privateKeyPwd: "compes-bedrock-aks-ssh-key-pwd"
+  owners:
+    - name: xiaodoli@microsoft.com
+      type: user
+  contributors:
+    - name: "Compliance Tooling Team"
+      type: group
+  readers:
+    - name: "1cs dri"
+      type: group

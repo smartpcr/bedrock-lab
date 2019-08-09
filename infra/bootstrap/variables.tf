@@ -160,3 +160,21 @@ variable "space_name" {
   type    = "string"
   default = "xiaodong"
 }
+
+variable "aks_owners" {
+  type = "string"
+  description = "comma separated aad user object id who are granted to cluster cluster admins"
+  default = []
+}
+
+variable "aks_contributors" {
+  type = "string"
+  description = "comma separated aad group object id who are contributors to aks"
+  default = []
+}
+
+variable "aks_readers" {
+  type = "string"
+  description = "comma separated aad group object id who are readers to aks"
+  default = []
+}

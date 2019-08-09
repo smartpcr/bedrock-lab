@@ -393,6 +393,68 @@ UsingScope("Set deployment key") {
     Read-Host "`nHit enter when done"
 }
 
+UsingScope("Setup users/groups") {
+    $owners = ""
+    $contributors = ""
+    $readers = ""
+
+    LogStep -Message "Populating users..."
+    if ($null -ne $settings.aks.owners -and $settings.aks.owners.Count -gt 0) {
+        $settings.aks.owners | ForEach-Object {
+            $username = $_.name
+            [array]$usersFound = az ad user list --upn $username | ConvertFrom-Json
+            if ($null -eq $usersFound -and $usersFound.Count -eq 1) {
+                if ($owners.Length -gt 0) {
+                    $owners += ","
+                }
+                $owners += $usersFound[0].objectId
+            }
+            else {
+                Write-Warning "No user found: '$username'"
+            }
+        }
+    }
+
+    LogStep -Message "Populating contributors..."
+    if ($null -ne $settings.aks.contributors -and $settings.aks.contributors.Count -gt 0) {
+        $settings.aks.contributors | ForEach-Object {
+            $groupName = $_.name
+            [array]$groupsFound = az ad group list --display-name $groupName | ConvertFrom-Json
+            if ($null -eq $groupsFound -and $groupsFound.Count -eq 1) {
+                if ($contributors.Length -gt 0) {
+                    $contributors += ","
+                }
+                $contributors += $groupsFound[0].objectId
+            }
+            else {
+                Write-Warning "No group found: '$groupName'"
+            }
+        }
+    }
+
+    LogStep -Message "Populating readers..."
+    if ($null -ne $settings.aks.readers -and $settings.aks.readers.Count -gt 0) {
+        $settings.aks.readers | ForEach-Object {
+            $groupName = $_.name
+            [array]$groupsFound = az ad group list --display-name $groupName | ConvertFrom-Json
+            if ($null -eq $groupsFound -and $groupsFound.Count -eq 1) {
+                if ($readers.Length -gt 0) {
+                    $readers += ","
+                }
+                $readers += $groupsFound[0].objectId
+            }
+            else {
+                Write-Warning "No group found: '$groupName'"
+            }
+        }
+    }
+
+    $settings.aks["roleAssignments"] = @{
+        ownerObjectIds = $owners
+        contributorObjectIds = $contributors
+        readerObjectIds = $readers
+    }
+}
 
 UsingScope("Setup terraform variables") {
 
