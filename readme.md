@@ -34,14 +34,14 @@ In addition, the following modification are made to aks cluster:
 
 ### HDL for infra
 | order | HDL component | status | notes |
-| -- | -- | -- |
+| -- | -- | -- | -- |
 | 1 | dns zone, nginx, external-dns | in-progress | dns zone handled by azure terraform module, others handled by helm in HDL definition |
 | 2 | prometheus-grafana-alert-manager | in-progress | need to deploy all resources to namespace 'prometheus' |
 | 3 | fluentd-elasticsearch-kibana | in-progress | make sure requested resource is within limit |
-| 4 | aad-pod-identity | no |
-| 5 | cosmosdb | no |
-| 6 | servicebus, kafka | no |
-| 7 | jaeger, app-insights | no |
+| 4 | aad-pod-identity | no | |
+| 5 | cosmosdb | no | |
+| 6 | servicebus, kafka | no | |
+| 7 | jaeger, app-insights | no | |
 
 ### HDL for services (helm)
 | order | HDL component | status |
