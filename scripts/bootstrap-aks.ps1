@@ -79,6 +79,7 @@ UsingScope("Ensure kv") {
 UsingScope("Ensure terraform spn") {
     [array]$terraformSpnsFound = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
     [string]$terraformSpnPwdValue = $null
+    [bool]$isSpnNewlyCreated = $false
     $certName = $settings.terraform.clientAppName
     if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
         LogStep -Message "Ensure terraform app cert is created"
@@ -110,6 +111,8 @@ UsingScope("Ensure terraform spn") {
         else {
             LogInfo -Message "Assignment already exists."
         }
+
+        $isSpnNewlyCreated = $true
     }
     elseif ($terraformSpnsFound.Count -gt 1) {
         throw "duplicated app found with name '$($settings.terraform.clientAppName)'"
@@ -125,40 +128,44 @@ UsingScope("Ensure terraform spn") {
     }
 
     $terraformSpn = az ad sp show --id $terraformSpn.appId | ConvertFrom-Json
-    LogStep -Message "Test service principal using password"
-    $totalRetries = 0
-    $loginIsSuccessful = $false
-    while (!$loginIsSuccessful -and $totalRetries -lt 3) {
-        try {
-            $azAccountFromSpn = LoginAsServicePrincipalUsingPwd `
-                -VaultName $settings.kv.name `
-                -SecretName $settings.terraform.clientSecret `
-                -ServicePrincipalName $settings.terraform.clientAppName `
-                -TenantId $azAccount.tenantId
 
-            if ($null -ne $azAccountFromSpn -and $azAccountFromSpn.id -eq $azAccount.id) {
-                $loginIsSuccessful = $true
+    if ($isSpnNewlyCreated) {
+        LogStep -Message "Test service principal using password"
+        $totalRetries = 0
+        $loginIsSuccessful = $false
+        while (!$loginIsSuccessful -and $totalRetries -lt 3) {
+            try {
+                $azAccountFromSpn = LoginAsServicePrincipalUsingPwd `
+                    -VaultName $settings.kv.name `
+                    -SecretName $settings.terraform.clientSecret `
+                    -ServicePrincipalName $settings.terraform.clientAppName `
+                    -TenantId $azAccount.tenantId
+
+                if ($null -ne $azAccountFromSpn -and $azAccountFromSpn.id -eq $azAccount.id) {
+                    $loginIsSuccessful = $true
+                }
+            }
+            catch {
+                $totalRetries++
+                Write-Warning "Retry login...wait 10 sec"
+                Start-Sleep -Seconds 10
             }
         }
-        catch {
-            $totalRetries++
-            Write-Warning "Retry login...wait 10 sec"
-            Start-Sleep -Seconds 10
+        if (!$loginIsSuccessful) {
+            throw "Failed to login"
         }
-    }
-    if (!$loginIsSuccessful) {
-        throw "Failed to login"
-    }
-    else {
-        LogInfo -Message "Logged in as '$($azAccountFromSpn.name)'"
-    }
+        else {
+            LogInfo -Message "Logged in as '$($azAccountFromSpn.name)'"
+        }
 
-    LogInfo -Message "Switch back to user mode"
-    LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName | Out-Null
+        LogInfo -Message "Switch back to user mode"
+        LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName | Out-Null
+    }
 
     $settings.terraform["spn"] = @{
-        appId = $terraformSpn.appId
-        pwd   = $terraformSpnPwdValue
+        appId    = $terraformSpn.appId
+        pwd      = $terraformSpnPwdValue
+        objectId = $terraformSpn.objectId
     }
 }
 

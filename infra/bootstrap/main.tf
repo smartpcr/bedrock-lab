@@ -74,9 +74,9 @@ module "aks-gitops" {
 module "dns" {
   source = "github.com/smartpcr/bedrock/cluster/azure/dns"
 
-  resource_group_name  = "${var.resource_group_name}"
-  location             = "${var.resource_group_location}"
-  name                 = "${var.dns_zone_name}"
-  service_principal_id = "${var.service_principal_id}"
-  caa_issuer           = "${var.dns_caa_issuer}"
+  resource_group_name         = "${var.resource_group_name}"
+  location                    = "${var.resource_group_location}"
+  name                        = "${var.dns_zone_name}"
+  service_principal_object_id = "${var.service_principal_object_id}"
+  caa_issuer                  = "${var.dns_caa_issuer}"
 }

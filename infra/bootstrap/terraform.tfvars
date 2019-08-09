@@ -42,6 +42,7 @@ flux_recreate = "true"
 # DNS zone
 dns_zone_name = "{{.Values.dns.name}}"
 dns_caa_issuer = "{{.Values.dns.caaIssuer}}"
+service_principal_object_id = "{{.Values.terraform.spn.objectId}}"
 
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use

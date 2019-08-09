@@ -189,3 +189,9 @@ variable "dns_caa_issuer" {
   type = "string"
   description = "name of issuer that can be trusted, i.e. letsencrypt.org"
 }
+
+variable "service_principal_object_id" {
+  type = "string"
+  description = "service principal object id who can read and write dns text records"
+}
+

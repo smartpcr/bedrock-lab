@@ -32,15 +32,18 @@ In addition, the following modification are made to aks cluster:
 | 6 | grant additional aad user and groups | yes |
 | 7 | update deploy-key, repo-url in flux settings and enable sync | yes |
 | 8 | enable remote tf state using azure blob storage | yes |
+| 9 | dns zone | yes |
+| 10 | cosmos-db | in-progress |
+| 11 | user assigned identity | need validation |
+| 12 | app-insights | no |
 
 ### HDL for infra
 | order | HDL component | status | notes |
 | -- | -- | -- | -- |
-| 1 | dns zone, nginx, external-dns | in-progress | dns zone handled by azure terraform module, others handled by helm in HDL definition |
+| 1 | nginx, external-dns | in-progress | dns zone (handled by azure terraform module) is pre-requirement |
 | 2 | prometheus-grafana-alert-manager | in-progress | need to deploy all resources to namespace 'prometheus' |
-| 3 | fluentd-elasticsearch-kibana | in-progress | make sure requested resource is within limit |
+| 3 | fluentd-elasticsearch-kibana | done | |
 | 4 | aad-pod-identity | no | |
-| 5 | cosmosdb | no | |
 | 6 | servicebus, kafka | no | |
 | 7 | jaeger, app-insights | no | |
 
