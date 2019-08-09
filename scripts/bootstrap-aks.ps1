@@ -162,6 +162,42 @@ UsingScope("Ensure terraform spn") {
     }
 }
 
+UsingScope("Ensure terraform backend") {
+    LogStep -Message "Ensure backend storage account '$($settings.terraform.backend.storageAccount)'"
+    [array]$storageAccountsFound = az storage account list `
+        --resource-group $settings.global.resourceGroup.name `
+        --query "[?name=='$($settings.terraform.backend.storageAccount)']" | ConvertFrom-Json
+    if ($null -eq $storageAccountsFound -or $storageAccountsFound.Count -eq 0) {
+        $tfStorageAccount = az storage account create `
+            --name $settings.terraform.backend.storageAccount `
+            --resource-group $settings.global.resourceGroup.name `
+            --location $settings.global.resourceGroup.location `
+            --sku Standard_LRS | ConvertFrom-Json
+        LogInfo -Message "storage account '$($tfStorageAccount.name)' is created"
+    }
+    else {
+        $tfStorageAccount = $storageAccountsFound[0]
+    }
+
+    LogStep -Message "Get storage key"
+    $tfStorageKeys = az storage account keys list -g $settings.global.resourceGroup.name -n $settings.terraform.backend.storageAccount | ConvertFrom-Json
+    $tfStorageKey = $tfStorageKeys[0].value
+
+    LogStep -Message "Ensure blob container '$($settings.terraform.backend.containerName)'"
+    [array]$blobContainersFound = az storage container list `
+        --account-name $tfStorageAccount.name `
+        --account-key $tfStorageKey `
+        --query "[?name=='$($settings.terraform.backend.containerName)']" | ConvertFrom-Json
+    if ($null -eq $blobContainersFound -or $blobContainersFound.Count -eq 0) {
+        az storage container create --name $settings.terraform.backend.containerName --account-name $tfStorageAccount.name --account-key $tfStorageKey | Out-Null
+    }
+    else {
+        LogInfo -Message "blob container already created"
+    }
+
+    $settings.terraform.backend["accessKey"] = $tfStorageKey
+}
+
 UsingScope("Ensure aks server app") {
     $aksServerAppPwdValue = $null
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json
@@ -461,6 +497,11 @@ UsingScope("Setup terraform variables") {
     $tfVarFile = Join-Path $bootstrapFolder "terraform.tfvars"
     $tfVarContent = Get-Content $tfVarFile -Raw
     $tfVarContent = Set-YamlValues -ValueTemplate $tfVarContent -Settings $settings
+
+    $backendVarFle = Join-Path $bootstrapFolder "backend.tfvars"
+    $backendVarContent = Get-Content $backendVarFle -Raw
+    $backendVarContent = Set-YamlValues -ValueTemplate $backendVarContent -Settings $settings
+
     $terraformOutputFolder = Join-Path $tempFolder "terraform"
     if (Test-Path $terraformOutputFolder) {
         # keep terraform.tfstate, kubeconfig, otherwise it's going to re-create cluster or trying to connect to localhost
@@ -473,9 +514,9 @@ UsingScope("Setup terraform variables") {
         New-Item $terraformOutputFolder -ItemType Directory -Force | Out-Null
     }
 
-
     LogStep -Message "Write terraform output to '$terraformOutputFolder'"
     $tfVarContent | Out-File (Join-Path $terraformOutputFolder "terraform.tfvars") -Encoding ascii -Force
+    $backendVarContent | Out-File (Join-Path $terraformOutputFolder "backend.tfvars") -Encoding ascii -Force
     Copy-Item (Join-Path $bootstrapFolder "main.tf") -Destination (Join-Path $terraformOutputFolder "main.tf") -Force
     Copy-Item (Join-Path $bootstrapFolder "variables.tf") -Destination (Join-Path $terraformOutputFolder "variables.tf") -Force
     Set-Location $terraformOutputFolder

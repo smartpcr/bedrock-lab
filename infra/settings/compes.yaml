@@ -13,6 +13,10 @@ kv:
 terraform:
   clientAppName: compes-bedrock-terraform-spn
   clientSecret: compes-bedrock-terraform-spn-pwd
+  backend:
+    storageAccount: compesterraformstate
+    containerName: compes
+    key: tfstate
 aks:
   reuseExistingAadApp: true
   serverApp: App Center AKS AAD (non-production)

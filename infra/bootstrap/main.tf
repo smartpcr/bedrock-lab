@@ -1,3 +1,7 @@
+terraform {
+  backend "azurerm" {}
+}
+
 module "provider" {
   source = "github.com/smartpcr/bedrock/cluster/azure/provider"
 }
@@ -53,7 +57,7 @@ module "aks-gitops" {
   aks_owners       = "${var.aks_owners}"
   aks_contributors = "${var.aks_contributors}"
   aks_readers      = "${var.aks_readers}"
-  
+
   # flux
   enable_flux          = "${var.enable_flux}"
   flux_recreate        = "${var.flux_recreate}"
@@ -65,5 +69,4 @@ module "aks-gitops" {
   gitops_path          = "${var.gitops_path}"
   gitops_poll_interval = "${var.gitops_poll_interval}"
   gitops_url_branch    = "${var.gitops_url_branch}"
-
 }

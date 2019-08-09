@@ -31,6 +31,7 @@ In addition, the following modification are made to aks cluster:
 | 5 | grant dashboard access | yes |
 | 6 | grant additional aad user and groups | yes |
 | 7 | update deploy-key, repo-url in flux settings and enable sync | yes |
+| 8 | enable remote tf state using azure blob storage | in-progress |
 
 ### HDL for infra
 | order | HDL component | status | notes |
