@@ -13,6 +13,10 @@ kv:
 terraform:
   clientAppName: rrdu-bedrock-terraform-spn
   clientSecret: rrdu-bedrock-terraform-spn-pwd
+  backend:
+    storageAccount: rrdpterraformstate
+    containerName: rrdp
+    key: tfstate
 aks:
   reuseExistingAadApp: true
   serverApp: rrdu-bedrock-aks-server-app
@@ -27,3 +31,6 @@ aks:
     privateKey: "rrdu-bedrock-aks-ssh-key"
     publicKey: "rrdu-bedrock-aks-ssh-pub"
     privateKeyPwd: "rrdu-bedrock-aks-ssh-key-pwd"
+dns:
+  name: dev.1es.io
+  caaIssuer: letsencrypt.org # use microsoft when CA is internal

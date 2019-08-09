@@ -40,3 +40,6 @@ aks:
   readers:
     - name: "1cs dri"
       type: group
+dns:
+  name: dev.1es.io
+  caaIssuer: letsencrypt.org # use microsoft when CA is internal

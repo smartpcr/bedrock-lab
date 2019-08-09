@@ -485,9 +485,9 @@ UsingScope("Setup users/groups") {
     }
 
     $settings.aks["roleAssignments"] = @{
-        ownerObjectIds = $owners
+        ownerObjectIds       = $owners
         contributorObjectIds = $contributors
-        readerObjectIds = $readers
+        readerObjectIds      = $readers
     }
 }
 

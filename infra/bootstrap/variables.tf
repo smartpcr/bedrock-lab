@@ -178,3 +178,14 @@ variable "aks_readers" {
   description = "comma separated aad group object id who are readers to aks"
   default = ""
 }
+
+# DNS Zone
+variable "dns_zone_name" {
+  type = "string"
+  description = "name of dns zone, redirect traffic under a zone, i.e. dev.1cs.io"
+}
+
+variable "dns_caa_issuer" {
+  type = "string"
+  description = "name of issuer that can be trusted, i.e. letsencrypt.org"
+}

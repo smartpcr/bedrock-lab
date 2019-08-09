@@ -11,6 +11,7 @@ access_key = "{{.Values.terraform.backend.accessKey}}"
 resource_group_name="{{.Values.aks.resourceGroup}}"
 resource_group_location="{{.Values.aks.location}}"
 
+# aks
 cluster_name="{{.Values.aks.clusterName}}"
 agent_vm_count = "{{.Values.aks.nodeCount}}"
 agent_vm_size = "{{.Values.aks.vmSize}}"
@@ -27,15 +28,20 @@ dashboard_cluster_role = "cluster_admin"
 enable_dev_spaces = "true"
 space_name = "xiaodong"
 
+# aks role assignment
 aks_owners = "{{.Values.aks.roleAssignments.ownerObjectIds}}"
 aks_contributors = "{{.Values.aks.roleAssignments.contributorObjectIds}}"
 aks_readers = "{{.Values.aks.roleAssignments.readerObjectIds}}"
 
+# flux
 gitops_ssh_url = "{{.Values.gitRepo.repo}}"
 gitops_ssh_key = "{{.Values.gitRepo.deployPrivateKeyFile}}"
 enable_flux = "true"
 flux_recreate = "true"
 
+# DNS zone
+dns_zone_name = "{{.Values.dns.name}}"
+dns_caa_issuer = "{{.Values.dns.caaIssuer}}"
 
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use
