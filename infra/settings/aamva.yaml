@@ -14,6 +14,7 @@ terraform:
   clientAppName: aama-bedrock-terraform-spn
   clientSecret: aama-bedrock-terraform-spn-pwd
 aks:
+  reuseExistingAadApp: true
   serverApp: aama-bedrock-aks-server-app
   serverSecret: aama-bedrock-aks-spn-pwd
   clientApp: aama-bedrock-aks-client-app

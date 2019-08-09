@@ -14,6 +14,7 @@ terraform:
   clientAppName: rrdu-bedrock-terraform-spn
   clientSecret: rrdu-bedrock-terraform-spn-pwd
 aks:
+  reuseExistingAadApp: true
   serverApp: rrdu-bedrock-aks-server-app
   serverSecret: rrdu-bedrock-aks-spn-pwd
   clientApp: rrdu-bedrock-aks-client-app

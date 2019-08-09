@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingName = "rrdu"
+    [string] $SettingName = "compes"
 )
 
 $ErrorActionPreference = "Stop"
@@ -126,14 +126,27 @@ UsingScope("Ensure terraform spn") {
 
     $terraformSpn = az ad sp show --id $terraformSpn.appId | ConvertFrom-Json
     LogStep -Message "Test service principal using password"
-    # LogInfo -Message "Wait 15 seconds till terraform app is populated"
-    # Start-Sleep -Seconds 15
-    $azAccountFromSpn = LoginAsServicePrincipalUsingPwd `
-        -VaultName $settings.kv.name `
-        -SecretName $settings.terraform.clientSecret `
-        -ServicePrincipalName $settings.terraform.clientAppName `
-        -TenantId $azAccount.tenantId
-    if ($null -eq $azAccountFromSpn -or $azAccountFromSpn.id -ne $azAccount.id) {
+    $totalRetries = 0
+    $loginIsSuccessful = $false
+    while (!$loginIsSuccessful -and $totalRetries -lt 3) {
+        try {
+            $azAccountFromSpn = LoginAsServicePrincipalUsingPwd `
+                -VaultName $settings.kv.name `
+                -SecretName $settings.terraform.clientSecret `
+                -ServicePrincipalName $settings.terraform.clientAppName `
+                -TenantId $azAccount.tenantId
+
+            if ($null -ne $azAccountFromSpn -and $azAccountFromSpn.id -eq $azAccount.id) {
+                $loginIsSuccessful = $true
+            }
+        }
+        catch {
+            $totalRetries++
+            Write-Warning "Retry login...wait 10 sec"
+            Start-Sleep -Seconds 10
+        }
+    }
+    if (!$loginIsSuccessful) {
         throw "Failed to login"
     }
     else {
@@ -152,25 +165,36 @@ UsingScope("Ensure terraform spn") {
 UsingScope("Ensure aks server app") {
     $aksServerAppPwdValue = $null
     [array]$aksServerAppsFound = az ad sp list --display-name $settings.aks.serverApp | ConvertFrom-Json
-    if ($null -eq $aksServerAppsFound -or $aksServerAppsFound.Count -eq 0) {
-        $scopes = "/subscriptions/$($azAccount.id)"
-        $aksServerApp = az ad sp create-for-rbac `
-            --name $settings.aks.serverApp `
-            --role="Contributor" `
-            --scopes=$scopes | ConvertFrom-Json
 
-        $aksServerAppPwdValue = $aksServerApp.password
-        az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.serverSecret --value $aksServerAppPwdValue | Out-Null
-    }
-    elseif ($aksServerAppsFound.Count -gt 1) {
-        throw "Duplicated app found with name '$($settings.aks.serverApp)'"
+    if ($settings.aks.reuseExistingAadApp) {
+        if ($null -eq $aksServerAppsFound -or $aksServerAppsFound.Count -ne 1) {
+            throw "Failed to find aks server app '$($settings.aks.serverApp)'"
+        }
+        else {
+            $aksServerApp = $aksServerAppsFound[0]
+        }
     }
     else {
-        $aksServerApp = $aksServerAppsFound[0]
-    }
+        if ($null -eq $aksServerAppsFound -or $aksServerAppsFound.Count -eq 0) {
+            $scopes = "/subscriptions/$($azAccount.id)"
+            $aksServerApp = az ad sp create-for-rbac `
+                --name $settings.aks.serverApp `
+                --role="Contributor" `
+                --scopes=$scopes | ConvertFrom-Json
 
-    LogStep -Message "Update server app access"
-    $authJson = @"
+            $aksServerAppPwdValue = $aksServerApp.password
+            az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.serverSecret --value $aksServerAppPwdValue | Out-Null
+        }
+        elseif ($aksServerAppsFound.Count -gt 1) {
+            throw "Duplicated app found with name '$($settings.aks.serverApp)'"
+        }
+        else {
+            $aksServerApp = $aksServerAppsFound[0]
+        }
+
+
+        LogStep -Message "Update server app access"
+        $authJson = @"
     [
         {
           "resourceAccess": [
@@ -200,30 +224,30 @@ UsingScope("Ensure aks server app") {
         }
       ]
 "@
-    $spnAuthJsonFile = Join-Path $tempFolder "aks_server_app_auth.json"
-    $authJson | Out-File $spnAuthJsonFile
+        $spnAuthJsonFile = Join-Path $tempFolder "aks_server_app_auth.json"
+        $authJson | Out-File $spnAuthJsonFile
 
-    $totalRetries = 0
-    $isSuccessful = $false
-    while ($totalRetries -lt 3 -and !$isSuccessful) {
-        try {
+        $totalRetries = 0
+        $isSuccessful = $false
+        while ($totalRetries -lt 3 -and !$isSuccessful) {
+            try {
+                az ad app update --id $aksServerApp.appId --required-resource-accesses $spnAuthJsonFile | Out-Null
+                az ad app update --id $aksServerApp.appId --reply-urls "http://$($settings.aks.serverApp)" | Out-Null
+                $isSuccessful = $true
+            }
+            catch {
+                $isSuccessful = $false
+                LogInfo -Message "retry..."
+                Start-Sleep -Seconds 10 # wait for app become available
+            }
+            finally {
+                $totalRetries++
+            }
+        }
 
-            az ad app update --id $aksServerApp.appId --required-resource-accesses $spnAuthJsonFile | Out-Null
-            az ad app update --id $aksServerApp.appId --reply-urls "http://$($settings.aks.serverApp)" | Out-Null
-            $isSuccessful = $true
+        if (!$isSuccessful) {
+            throw "Failed to update aks server app '$($aksServerApp.appId)'"
         }
-        catch {
-            $isSuccessful = $false
-            LogInfo -Message "retry..."
-            Start-Sleep -Seconds 10 # wait for app become available
-        }
-        finally {
-            $totalRetries++
-        }
-    }
-
-    if (!$isSuccessful) {
-        throw "Failed to update aad app '$($aksServerApp.appId)'"
     }
 }
 
@@ -232,31 +256,52 @@ UsingScope("Ensure aks client app") {
     $aksServerApp = $aksServerAppsFound[0]
 
     [array]$aksClientSpnsFound = az ad sp list --display-name $settings.aks.clientApp | ConvertFrom-Json
-    if ($null -eq $aksClientSpnsFound -or $aksClientSpnsFound.Count -eq 0) {
-        $resourceAccess = "[{`"resourceAccess`": [{`"id`": `"318f4279-a6d6-497a-8c69-a793bda0d54f`", `"type`": `"Scope`"}],`"resourceAppId`": `"$($aksServerApp.appId)`"}]"
-        $clientAuthJsonFile = Join-Path $tempFolder "aks_client_app_auth.json"
-        $resourceAccess | Out-File $clientAuthJsonFile
-        $aksClientApp = az ad app create `
-            --display-name $settings.aks.clientApp `
-            --native-app `
-            --reply-urls "http://$($settings.aks.serverApp)" `
-            --required-resource-accesses @$clientAuthJsonFile | ConvertFrom-Json
-
-        $aksClientSpn = az ad sp create --id $aksClientApp.appId | ConvertFrom-Json
-    }
-    elseif ($aksClientSpnsFound.Count -gt 1) {
-        throw "Duplicate app found with name '$($settings.aks.clientAppName)'"
+    if ($settings.aks.reuseExistingAadApp) {
+        if ($null -eq $aksClientSpnsFound -or $aksClientSpnsFound.Count -ne 1) {
+            throw "Failed to find aks client app '$($settings.aks.clientApp)'"
+        }
+        else {
+            $aksClientSpn = $aksClientSpnsFound[0]
+        }
     }
     else {
-        $aksClientSpn = $aksClientSpnsFound[0]
+        if ($null -eq $aksClientSpnsFound -or $aksClientSpnsFound.Count -eq 0) {
+            $resourceAccess = "[{`"resourceAccess`": [{`"id`": `"318f4279-a6d6-497a-8c69-a793bda0d54f`", `"type`": `"Scope`"}],`"resourceAppId`": `"$($aksServerApp.appId)`"}]"
+            $clientAuthJsonFile = Join-Path $tempFolder "aks_client_app_auth.json"
+            $resourceAccess | Out-File $clientAuthJsonFile
+            $aksClientApp = az ad app create `
+                --display-name $settings.aks.clientApp `
+                --native-app `
+                --reply-urls "http://$($settings.aks.serverApp)" `
+                --required-resource-accesses @$clientAuthJsonFile | ConvertFrom-Json
+
+            $aksClientSpn = az ad sp create --id $aksClientApp.appId | ConvertFrom-Json
+        }
+        elseif ($aksClientSpnsFound.Count -gt 1) {
+            throw "Duplicate app found with name '$($settings.aks.clientAppName)'"
+        }
+        else {
+            $aksClientSpn = $aksClientSpnsFound[0]
+        }
+
+        az ad app update --id $aksClientSpn.appId --reply-urls "http://$($settings.aks.serverApp)"
     }
 
-    az ad app update --id $aksClientSpn.appId --reply-urls "http://$($settings.aks.serverApp)"
-
     if ($null -eq $aksServerAppPwdValue -or $aksServerAppPwdValue.Length -eq 0) {
-        $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
-        $aksServerAppPwdValue = $aksServerAppPwd.value
-        az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwdValue | Out-Null
+        if ($settings.aks.reuseExistingAadApp) {
+            $aksServerAppPwd = TryGetSecret -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
+            if ($null -eq $aksServerAppPwd) {
+                throw "AKS server app password '$($settings.aks.serverSecret)' is not found in vault '$($settings.kv.name)'"
+            }
+            else {
+                $aksServerAppPwdValue = $aksServerAppPwd.value
+            }
+        }
+        else {
+            $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
+            $aksServerAppPwdValue = $aksServerAppPwd.value
+            az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwdValue | Out-Null
+        }
     }
 
     $settings.aks["resourceGroup"] = $settings.global.resourceGroup.name
@@ -268,11 +313,16 @@ UsingScope("Ensure aks client app") {
 }
 
 UsingScope("Ensure aad apps permissions") {
-    LogStep -Message "Check aks server app grants"
-    az ad app permission admin-consent --id $aksServerApp.appId
+    if ($settings.aks.reuseExistingAadApp) {
+        LogStep -Message "Skipping grant aks server/client app permission (should already be done)"
+    }
+    else {
+        LogStep -Message "Check aks server app grants"
+        az ad app permission admin-consent --id $aksServerApp.appId
 
-    LogStep -Message "Check aks client app grants"
-    az ad app permission admin-consent --id $aksClientSpn.appId
+        LogStep -Message "Check aks client app grants"
+        az ad app permission admin-consent --id $aksClientSpn.appId
+    }
 }
 
 UsingScope("Ensure SSH key for AKS") {

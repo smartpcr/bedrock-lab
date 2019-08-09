@@ -172,8 +172,8 @@ function LogTitle() {
     )
 
     $formatedMessage = "`n`t`t***** $Message *****`n"
-    Write-Host $formatedMessage
-    Write-Host "Writing log to $($Global:LogFile)...($(Get-Date))"
+    Write-Host $formatedMessage -ForegroundColor Green
+    Write-Host "Writing log to $($Global:LogFile)...($(Get-Date))" -ForegroundColor White
     Add-Content -Path $Global:LogFile -Value $formatedMessage
 }
 

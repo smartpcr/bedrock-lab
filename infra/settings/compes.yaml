@@ -1,0 +1,29 @@
+global:
+  subscriptionName: "Compliance_Tools_Eng"
+  resourceGroup:
+    name: compes-bedrock-lab
+    location: westus2
+gitRepo:
+  teamOrUser: smartpcr
+  name: git-deploy
+  deployPrivateKey: flux-deploy-key
+  deployPublicKey: flux-deploy-pub
+kv:
+  name: compes-bedrock-kv
+terraform:
+  clientAppName: compes-bedrock-terraform-spn
+  clientSecret: compes-bedrock-terraform-spn-pwd
+aks:
+  reuseExistingAadApp: true
+  serverApp: App Center AKS AAD (non-production)
+  serverSecret: AppCenter-AKS-AADAppPwd
+  clientApp: App Center AKS (non-production)
+  clusterName: compes-bedrock-lab
+  nodeCount: 3
+  vmSize: "Standard_D4s_v3"
+  dnsPrefix: bedrock-lab
+  virtualNetwork: bedrock-vnet
+  ssh:
+    privateKey: "compes-bedrock-aks-ssh-key"
+    publicKey: "compes-bedrock-aks-ssh-pub"
+    privateKeyPwd: "compes-bedrock-aks-ssh-key-pwd"
