@@ -29,15 +29,15 @@ In addition, the following modification are made to aks cluster:
 | 3 | integrate aad profile | yes |
 | 4 | additional addons (routing, monitoring, devspaces) | yes |
 | 5 | grant dashboard access | yes |
-| 6 | grant additional aad user and groups | in-progress |
-| 7 | update deploy-key, repo-url in flux settings and enable sync | no |
+| 6 | grant additional aad user and groups | yes |
+| 7 | update deploy-key, repo-url in flux settings and enable sync | yes |
 
 ### HDL for infra
-| order | HDL component | status |
+| order | HDL component | status | notes |
 | -- | -- | -- |
-| 1 | dns zone, nginx, external-dns | no |
-| 2 | prometheus-grafana-alert-manager | no |
-| 3 | fluentd-elasticsearch-kibana | no |
+| 1 | dns zone, nginx, external-dns | in-progress | dns zone handled by azure terraform module, others handled by helm in HDL definition |
+| 2 | prometheus-grafana-alert-manager | in-progress | need to deploy all resources to namespace 'prometheus' |
+| 3 | fluentd-elasticsearch-kibana | in-progress | make sure requested resource is within limit |
 | 4 | aad-pod-identity | no |
 | 5 | cosmosdb | no |
 | 6 | servicebus, kafka | no |

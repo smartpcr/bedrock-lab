@@ -300,7 +300,7 @@ UsingScope("Ensure aks client app") {
         else {
             $aksServerAppPwd = Get-OrCreatePasswordInVault -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
             $aksServerAppPwdValue = $aksServerAppPwd.value
-            az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwdValue | Out-Null
+            az ad sp credential reset --name $aksServerApp.appId --password $aksServerAppPwdValue --append | Out-Null
         }
     }
 
@@ -390,7 +390,6 @@ UsingScope("Set deployment key") {
     $pubDeployKeyData = (Get-Content $sshPubKeyFile -Encoding Ascii)
     $pubDeployKeyData = $pubDeployKeyData.Trim().Replace("\", "\\")
     Write-Host $pubDeployKeyData
-    Read-Host "`nHit enter when done"
 }
 
 UsingScope("Setup users/groups") {
@@ -403,7 +402,7 @@ UsingScope("Setup users/groups") {
         $settings.aks.owners | ForEach-Object {
             $username = $_.name
             [array]$usersFound = az ad user list --upn $username | ConvertFrom-Json
-            if ($null -eq $usersFound -and $usersFound.Count -eq 1) {
+            if ($null -ne $usersFound -and $usersFound.Count -eq 1) {
                 if ($owners.Length -gt 0) {
                     $owners += ","
                 }
@@ -420,7 +419,7 @@ UsingScope("Setup users/groups") {
         $settings.aks.contributors | ForEach-Object {
             $groupName = $_.name
             [array]$groupsFound = az ad group list --display-name $groupName | ConvertFrom-Json
-            if ($null -eq $groupsFound -and $groupsFound.Count -eq 1) {
+            if ($null -ne $groupsFound -and $groupsFound.Count -eq 1) {
                 if ($contributors.Length -gt 0) {
                     $contributors += ","
                 }
@@ -437,7 +436,7 @@ UsingScope("Setup users/groups") {
         $settings.aks.readers | ForEach-Object {
             $groupName = $_.name
             [array]$groupsFound = az ad group list --display-name $groupName | ConvertFrom-Json
-            if ($null -eq $groupsFound -and $groupsFound.Count -eq 1) {
+            if ($null -ne $groupsFound -and $groupsFound.Count -eq 1) {
                 if ($readers.Length -gt 0) {
                     $readers += ","
                 }
