@@ -435,7 +435,7 @@ UsingScope("Set deployment key") {
     Write-Host $pubDeployKeyData
 }
 
-UsingScope("Setup users/groups") {
+UsingScope("Setup AKS users/groups") {
     $owners = ""
     $contributors = ""
     $readers = ""
@@ -495,6 +495,27 @@ UsingScope("Setup users/groups") {
         ownerObjectIds       = $owners
         contributorObjectIds = $contributors
         readerObjectIds      = $readers
+    }
+}
+
+UsingScope("Setup cosmosdb") {
+    if ($null -ne $settings["cosmosdb"]) {
+        LogInfo -Message "Collecting collection settings..."
+        $collectionSettings = ""
+        $settings.cosmosdb.collections | ForEach-Object {
+            LogStep -Message "Collection: $($_.name)"
+            $partitionKey = if ($null -ne $_["partition"]) { $_["partition"] } else { "id" }
+            $throughput = if ($null -ne $_["throughput"]) { [int]$_["throughput"] } else { 400 }
+            $collectionSetting = "$($_.name),$($partitionKey),$($throughput)"
+            if ($collectionSettings.Length -gt 0) {
+                $collectionSettings += ";"
+            }
+            $collectionSettings += $collectionSetting
+        }
+        $settings.cosmosdb["collectionSettings"] = $collectionSettings
+    }
+    else {
+        LogInfo -Message "Skip setting up cosmosdb"
     }
 }
 

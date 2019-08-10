@@ -44,6 +44,14 @@ dns_zone_name = "{{.Values.dns.name}}"
 dns_caa_issuer = "{{.Values.dns.caaIssuer}}"
 service_principal_object_id = "{{.Values.terraform.spn.objectId}}"
 
+# Cosmos DB
+alt_location = "{{.Values.cosmosdb.failOverRegion}}"
+allowed_ip_ranges = "{{.Values.cosmosdb.corpIpRanges}}"
+consistency_level = "{{.Values.cosmosdb.consistency}}"
+cosmos_db_account = "{{.Values.cosmosdb.account}}"
+cosmos_db_name = "{{.Values.cosmosdb.db}}"
+cosmos_db_collections = "{{.Values.cosmosdb.collectionSettings}}"
+
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use
 #--------------------------------------------------------------

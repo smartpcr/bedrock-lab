@@ -80,3 +80,15 @@ module "dns" {
   service_principal_object_id = "${var.service_principal_object_id}"
   caa_issuer                  = "${var.dns_caa_issuer}"
 }
+
+module "cosmosdb" {
+  source = "github.com/smartpcr/bedrock/cluster/azure/cosmos-sqldb"
+
+  resource_group_name         = "${var.resource_group_name}"
+  location                    = "${var.resource_group_location}"
+  cosmos_db_account = "${var.cosmos_db_account}"
+  alt_location = "${var.alt_location}"
+  cosmos_db_name = "${var.cosmos_db_name}"
+  cosmos_db_collections = "${var.cosmos_db_collections}"
+  allowed_ip_ranges = "${var.allowed_ip_ranges}"
+}
