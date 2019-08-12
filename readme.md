@@ -33,19 +33,22 @@ In addition, the following modification are made to aks cluster:
 | 7 | update deploy-key, repo-url in flux settings and enable sync | yes |
 | 8 | enable remote tf state using azure blob storage | yes |
 | 9 | dns zone | yes |
-| 10 | cosmos-db | in-progress |
+| 10 | cosmos-db | blocked |
 | 11 | user assigned identity | need validation |
-| 12 | app-insights | no |
+| 12 | app-insights | in-progress |
 
 ### HDL for infra
 | order | HDL component | status | notes |
 | -- | -- | -- | -- |
-| 1 | nginx, external-dns | in-progress | dns zone (handled by azure terraform module) is pre-requirement |
-| 2 | prometheus-grafana-alert-manager | in-progress | need to deploy all resources to namespace 'prometheus' |
-| 3 | fluentd-elasticsearch-kibana | done | |
-| 4 | aad-pod-identity | no | |
-| 6 | servicebus, kafka | no | |
-| 7 | jaeger, app-insights | no | |
+| 1 | nginx | in-progress | dns zone (handled by azure terraform module) is pre-requirement |
+| 2 | external-dns | in-progress | dns zone (handled by azure terraform module) is pre-requirement |
+| 3 | geneva-metrics | no | need provision new service principal to access geneva-linux acr |
+| 4 | geneva-service | no | need provision new service principal to access geneva-linux acr |
+| 5 | prometheus-grafana-alert-manager | in-progress | need to deploy all resources to namespace 'prometheus' |
+| 6 | fluentd-elasticsearch-kibana | done | |
+| 7 | aad-pod-identity | no | |
+| 8 | servicebus, kafka | no | |
+| 9 | jaeger, app-insights | no | |
 
 ### HDL for services (helm)
 | order | HDL component | status |
