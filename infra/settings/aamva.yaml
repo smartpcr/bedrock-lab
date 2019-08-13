@@ -10,6 +10,7 @@ gitRepo:
   deployPublicKey: flux-deploy-pub
 kv:
   name: aama-bedrock-kv
+  readerSpn: aama-bedrock-kv-reader
 terraform:
   clientAppName: aama-bedrock-terraform-spn
   clientSecret: aama-bedrock-terraform-spn-pwd

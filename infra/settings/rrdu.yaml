@@ -10,6 +10,7 @@ gitRepo:
   deployPublicKey: flux-deploy-pub
 kv:
   name: rrdu-bedrock-kv
+  readerSpn: rrdu-bedrock-kv-reader
 terraform:
   clientAppName: rrdu-bedrock-terraform-spn
   clientSecret: rrdu-bedrock-terraform-spn-pwd
