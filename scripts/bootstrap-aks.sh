@@ -1,4 +1,4 @@
-terraform init
+terraform init -backend-config="backend.tfvars"
 
 export ARM_SUBSCRIPTION_ID="{{.Values.global.subscriptionId}}"
 export ARM_TENANT_ID="{{.Values.global.tenantId}}"
