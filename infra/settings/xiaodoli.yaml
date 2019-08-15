@@ -1,0 +1,89 @@
+global:
+  subscriptionName: "xiaodoli"
+  resourceGroup:
+    name: xiaodoli-bedrock-lab
+    location: westus2
+gitRepo:
+  teamOrUser: smartpcr
+  name: git-deploy
+  deployPrivateKey: flux-deploy-key
+  deployPublicKey: flux-deploy-pub
+kv:
+  name: xiaodoli-bedrock-kv
+  readerSpn: xiaodoli-bedrock-kv-reader
+terraform:
+  clientAppName: xiaodoli-bedrock-terraform-spn
+  clientSecret: xiaodoli-bedrock-terraform-spn-pwd
+  backend:
+    storageAccount: xiaodoliterraformstate
+    containerName: xiaodoli
+    key: tfstate
+aks:
+  reuseExistingAadApp: true
+  serverApp: App Center AKS AAD (non-production)
+  serverSecret: AppCenter-AKS-AADAppPwd
+  clientApp: App Center AKS (non-production)
+  clusterName: xiaodoli-bedrock-lab
+  nodeCount: 3
+  vmSize: "Standard_D4s_v3"
+  dnsPrefix: bedrock-lab
+  virtualNetwork: bedrock-vnet
+  ssh:
+    privateKey: "xiaodoli-bedrock-aks-ssh-key"
+    publicKey: "xiaodoli-bedrock-aks-ssh-pub"
+    privateKeyPwd: "xiaodoli-bedrock-aks-ssh-key-pwd"
+  owners:
+    - name: xiaodoli@microsoft.com
+      type: user
+  contributors:
+    - name: "Compliance Tooling Team"
+      type: group
+  readers:
+    - name: "1cs dri"
+      type: group
+dns:
+  name: dev.1es.io
+  caaIssuer: letsencrypt.org # use microsoft when CA is internal
+cosmosdb:
+  account: xiaodoli-bedrock-lab
+  authKey: xiaodoli-bedrock-lab-authkey
+  consistency: Strong
+  failOverRegion: eastus
+  corpIpRanges: 24.17.206.116
+  api: SQL
+  db: product-catalog
+  collections:
+    - name: "policy-ado-snapshot"
+      partition: "/partitionKey"
+      throughput: 1000
+    - name: "policy-catalog"
+    - name: "policy-events"
+      partition: "/partitionKey"
+    - name: "policy-events-error"
+      partition: "/partitionKey"
+    - name: "policy-events-lease"
+    - name: "policy-extension"
+      partition: "/partitionKey"
+    - name: "policy-install"
+      partition: "/partitionKey"
+    - name: "policy-installerror"
+      partition: "/partitionKey"
+    - name: "policy-refresh"
+      partition: "/partitionKey"
+    - name: "policy-refresh-error"
+      partition: "/partitionKey"
+    - name: "policy-refresh-lease"
+    - name: "policy-snapshots"
+      partition: "/partitionKey"
+      throughput: 1000
+    - name: "policy-snapshots-error"
+      partition: "/partitionKey"
+    - name: "policy-snapshots-lease"
+    - name: "policy-subscription-registry"
+      partition: "/id"
+    - name: "policy-catalog"
+    - name: "products"
+    - name: "ps"
+      partition: "/partitionKey"
+    - name: "ps-lease"
+      partition: "/id"

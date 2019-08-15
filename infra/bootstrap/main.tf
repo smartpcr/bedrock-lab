@@ -84,11 +84,11 @@ module "dns" {
 module "cosmosdb" {
   source = "github.com/smartpcr/bedrock/cluster/azure/cosmos-sqldb"
 
-  resource_group_name         = "${var.resource_group_name}"
-  location                    = "${var.resource_group_location}"
-  cosmos_db_account = "${var.cosmos_db_account}"
-  alt_location = "${var.alt_location}"
-  cosmos_db_name = "${var.cosmos_db_name}"
+  resource_group_name   = "${var.resource_group_name}"
+  location              = "${var.resource_group_location}"
+  cosmos_db_account     = "${var.cosmos_db_account}"
+  alt_location          = "${var.alt_location}"
+  cosmos_db_name        = "${var.cosmos_db_name}"
   cosmos_db_collections = "${var.cosmos_db_collections}"
-  allowed_ip_ranges = "${var.allowed_ip_ranges}"
+  allowed_ip_ranges     = "${var.allowed_ip_ranges}"
 }

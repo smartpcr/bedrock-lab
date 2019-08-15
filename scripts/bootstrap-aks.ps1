@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingName = "compes"
+    [string] $SettingName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
