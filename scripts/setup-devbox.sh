@@ -118,12 +118,12 @@ echo "Installing terraform"
 if [ -f "/usr/local/bin/terraform" ]; then
     echo "Terraform already installed"
 else
-    # bedrock cannot use terraform above version 0.11.14
-    wget https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
-    unzip terraform_0.11.14_linux_amd64.zip
+    # bedrock cannot use terraform above version 0.12.6
+    wget https://releases.hashicorp.com/terraform/0.12.6/terraform_0.12.6_linux_amd64.zip
+    unzip terraform_0.12.6_linux_amd64.zip
     sudo chmod +x terraform
     sudo mv terraform /usr/local/bin/
-    rm terraform_0.11.14_linux_amd64.zip
+    rm terraform_0.12.6_linux_amd64.zip
 fi
 
 
