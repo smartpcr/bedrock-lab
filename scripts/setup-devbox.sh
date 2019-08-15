@@ -128,7 +128,7 @@ fi
 
 
 echo "install kustomize"
-if [ -f "/usr/local/bin/kustomize" ] then
+if [ -f "/usr/local/bin/kustomize" ]; then
     echo "kustomize already installed"
 else
     brew install kustomize
