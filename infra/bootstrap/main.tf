@@ -101,6 +101,7 @@ module "kv-reader" {
   vault_name                      = "${var.vault_name}"
   vault_reader_identity           = "${var.vault_reader_identity}"
   aks_cluster_name                = "${var.cluster_name}"
+  aks_cluster_spn_name            = "${var.aks_cluster_spn_name}"
   aks_cluster_resource_group_name = "${var.resource_group_name}"
   aks_cluster_location            = "${var.resource_group_location}"
 }

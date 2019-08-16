@@ -5,6 +5,7 @@ resource_group_location="{{.Values.aks.location}}"
 # kv
 vault_name="{{.Values.kv.name}}"
 vault_reader_identity = "{{.Values.kv.reader}}"
+aks_cluster_spn_name = "{{.Values.terraform.clientAppName}}"
 
 # aks
 cluster_name="{{.Values.aks.clusterName}}"

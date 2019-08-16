@@ -248,3 +248,8 @@ variable "vault_reader_identity" {
   type        = "string"
   description = "user assigned identity name that will be granted reader role to key vault"
 }
+
+variable "aks_cluster_spn_name" {
+  type        = "string"
+  description = "name of AKS cluster service principal"
+}
