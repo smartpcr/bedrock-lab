@@ -1,3 +1,19 @@
+## flow with gitops (flux), terraform, helm, fabrikate and bedrock
+
+deployment artifacts can be grouped in the following categories:
+- azure resources: use terraform to sync states
+- app code (services): use helm to push changes to aks
+- k8s infra: use helm to push changes to k8s
+
+building blocks: 
+- [fabrikate_definitions](https://github.com/smartpcr/fabrikate-definitions): 
+- [hdl](https://github.com/smartpcr/hdl): defines high level services and aks infra components
+- [bedrock](https://github.com/smartpcr/bedrock): terraform modules
+- bedrock-lab (this repo): bootstrap
+- [git-deploy](https://github.com/smartpcr/git-deploy): generated yaml manifest to be synchronized into aks
+
+
+## intro
 Before git repo and aks cluster can be synchronized, the following must be created first
  - aks cluster
  - deploy flux to aks cluster
