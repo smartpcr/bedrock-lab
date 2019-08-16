@@ -29,10 +29,11 @@ In addition, the following modification are made to aks cluster:
 5. aad users and groups can be granted contributor/reader role in aks cluster
 6. install helm/tiller
 
-## steps
+## steps 
+_note: execute scripts in mac or linux, there are some gliches with WSL_
 1. modify `setting.yaml` file to point to your subscription, and where you want it to be created
 2. run `bootstrap-aks.ps1`
-3. navigate to terraform output folder, run `terraform.sh`
+3. navigate to terraform output folder, run `run-terraform.sh`
 
 
 ## progress
