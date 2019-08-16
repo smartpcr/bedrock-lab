@@ -92,3 +92,15 @@ module "cosmosdb" {
   cosmos_db_collections = "${var.cosmos_db_collections}"
   allowed_ip_ranges     = "${var.allowed_ip_ranges}"
 }
+
+module "kv-reader" {
+  source = "github.com/smartpcr/bedrock/cluster/azure/key-vault-reader"
+
+  resource_group_name             = "${var.resource_group_name}"
+  location                        = "${var.resource_group_location}"
+  keyvault_name                   = "${var.keyvault_name}"
+  vault_reader_identity           = "${var.vault_reader_identity}"
+  aks_cluster_name                = "${var.cluster_name}"
+  aks_cluster_resource_group_name = "${var.resource_group_name}"
+  aks_cluster_location            = "${var.resource_group_location}"
+}
