@@ -1,3 +1,22 @@
+###########################
+# global
+###########################
+variable "service_principal_object_id" {
+  type = "string"
+  description = "service principal object id who can read and write dns text records"
+}
+
+variable "resource_group_name" {
+  type = "string"
+}
+
+variable "resource_group_location" {
+  type = "string"
+}
+
+###########################
+# aks
+###########################
 variable "agent_vm_count" {
   type    = "string"
   default = "3"
@@ -23,49 +42,6 @@ variable "cluster_name" {
 }
 
 variable "dns_prefix" {
-  type = "string"
-}
-
-variable "enable_flux" {
-  type    = "string"
-  default = "true"
-}
-
-variable "flux_recreate" {
-  description = "Make any change to this value to trigger the recreation of the flux execution script."
-  type        = "string"
-  default     = ""
-}
-
-variable "kubeconfig_recreate" {
-  description = "Any change to this variable will recreate the kube config file to local disk."
-  type        = "string"
-  default     = ""
-}
-
-variable "gitops_ssh_url" {
-  type = "string"
-}
-
-variable "gitops_ssh_key" {
-  type = "string"
-}
-
-variable "gitops_path" {
-  type    = "string"
-  default = ""
-}
-
-variable "gitops_url_branch" {
-  type    = "string"
-  default = "master"
-}
-
-variable "resource_group_name" {
-  type = "string"
-}
-
-variable "resource_group_location" {
   type = "string"
 }
 
@@ -99,11 +75,6 @@ variable "server_app_secret" {
 variable "tenant_id" {
   type = "string"
   description = "(Optional) The Tenant ID used for Azure Active Directory Application. If this isn't specified the Tenant ID of the current Subscription is used. Changing this forces a new resource to be created."
-}
-
-variable "gitops_poll_interval" {
-  type    = "string"
-  default = "5m"
 }
 
 variable "vnet_name" {
@@ -147,6 +118,9 @@ variable "oms_agent_enabled" {
   default = "true"
 }
 
+###########################
+# aks addon/rbac
+###########################
 variable "dashboard_cluster_role" {
   type = "string"
 }
@@ -179,6 +153,50 @@ variable "aks_readers" {
   default = ""
 }
 
+###########################
+# flux
+###########################
+variable "gitops_poll_interval" {
+  type    = "string"
+  default = "5m"
+}
+
+variable "enable_flux" {
+  type    = "string"
+  default = "true"
+}
+
+variable "flux_recreate" {
+  description = "Make any change to this value to trigger the recreation of the flux execution script."
+  type        = "string"
+  default     = ""
+}
+
+variable "kubeconfig_recreate" {
+  description = "Any change to this variable will recreate the kube config file to local disk."
+  type        = "string"
+  default     = ""
+}
+
+variable "gitops_ssh_url" {
+  type = "string"
+}
+
+variable "gitops_ssh_key" {
+  type = "string"
+}
+
+variable "gitops_path" {
+  type    = "string"
+  default = ""
+}
+
+variable "gitops_url_branch" {
+  type    = "string"
+  default = "master"
+}
+
+
 # DNS Zone
 variable "dns_zone_name" {
   type = "string"
@@ -190,12 +208,10 @@ variable "dns_caa_issuer" {
   description = "name of issuer that can be trusted, i.e. letsencrypt.org"
 }
 
-variable "service_principal_object_id" {
-  type = "string"
-  description = "service principal object id who can read and write dns text records"
-}
 
+###########################
 # CosmosDB
+###########################
 variable "cosmos_db_account" {
   type = "string"
   description = "name of cosmosdb account"
@@ -238,7 +254,9 @@ variable "cosmos_db_collections" {
   description = "collections are separated by ';', each entry takes the format: collection_name,partiton_key,throughput"
 }
 
+###########################
 # kv reader
+###########################
 variable "vault_name" {
   type = "string"
   description = "name of key vault, must be unique within resource group"

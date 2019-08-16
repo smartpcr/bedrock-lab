@@ -11,6 +11,15 @@ resource "azurerm_resource_group" "cluster_rg" {
   location = "${var.resource_group_location}"
 }
 
+module "keyvault" {
+  source = "github.com/smartpcr/bedrock/cluster/azure/keyvault"
+
+  vault_name                  = "${var.vault_name}"
+  resource_group_name         = "${var.resource_group_name}"
+  location                    = "${var.resource_group_location}"
+  service_principal_object_id = "${var.service_principal_object_id}"
+}
+
 module "vnet" {
   source = "github.com/smartpcr/bedrock/cluster/azure/vnet"
 

@@ -334,7 +334,8 @@ UsingScope("Ensure aks client app") {
         if ($settings.aks.reuseExistingAadApp) {
             $aksServerAppPwd = TryGetSecret -VaultName $settings.kv.name -SecretName $settings.aks.serverSecret
             if ($null -eq $aksServerAppPwd) {
-                throw "AKS server app password '$($settings.aks.serverSecret)' is not found in vault '$($settings.kv.name)'"
+                $aksServerAppPwdValue = Read-Host "Enter password for app '$($settings.aks.serverApp)' ($($settings.aks.serverSecret))"
+                az keyvault secret set --vault-name $settings.kv.name --name $settings.aks.serverSecret --value $aksServerAppPwdValue
             }
             else {
                 $aksServerAppPwdValue = $aksServerAppPwd.value
@@ -513,7 +514,7 @@ UsingScope("Setup cosmosdb") {
             $collectionSettings += $collectionSetting
         }
         $settings.cosmosdb["collectionSettings"] = $collectionSettings
-        
+
     }
     else {
         LogInfo -Message "Skip setting up cosmosdb"
