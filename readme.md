@@ -1,6 +1,6 @@
 ## CI/CD with gitops (flux), terraform, helm, fabrikate and bedrock
 
-deployment artifacts can be grouped in the following categories:
+deployment artifacts can be grouped into 3 categories:
 - azure resources: use terraform to sync states
 - app code (services): use helm to push changes to aks
 - k8s infra: use helm to push changes to k8s
