@@ -24,40 +24,43 @@ In addition, the following modification are made to aks cluster:
 ### Bootstrap
 | order | task | status |
 | -- | -- | -- |
-| 1 | provision flux and aks cluster | yes |
-| 2 | output admin kube config | yes |
-| 3 | integrate aad profile | yes |
-| 4 | additional addons (routing, monitoring, devspaces) | yes |
-| 5 | grant dashboard access | yes |
-| 6 | grant additional aad user and groups | yes |
-| 7 | update deploy-key, repo-url in flux settings and enable sync | yes |
-| 8 | enable remote tf state using azure blob storage | yes |
-| 9 | dns zone | yes |
-| 10 | cosmos-db | blocked |
-| 11 | user assigned identity | need validation |
+| 1 | provision flux and aks cluster | done |
+| 2 | output admin kube config | done |
+| 3 | integrate aad profile | done |
+| 4 | additional addons (routing, monitoring, devspaces) | done |
+| 5 | grant dashboard access | done |
+| 6 | grant additional aad user and groups | done |
+| 7 | update deploy-key, repo-url in flux settings and enable sync | done |
+| 8 | enable remote tf state using azure blob storage | done |
+| 9 | dns zone | done |
+| 10 | cosmos-db | done |
+| 11 | user assigned identity and required permissions | need validation |
 | 12 | app-insights | in-progress |
 
 ### HDL for infra
 | order | HDL component | status | notes |
 | -- | -- | -- | -- |
-| 1 | nginx | in-progress | dns zone (handled by azure terraform module) is pre-requirement |
-| 2 | external-dns | in-progress | dns zone (handled by azure terraform module) is pre-requirement |
-| 3 | geneva-metrics | no | need provision new service principal to access geneva-linux acr |
-| 4 | geneva-service | no | need provision new service principal to access geneva-linux acr |
-| 5 | prometheus-grafana-alert-manager | in-progress | need to deploy all resources to namespace 'prometheus' |
-| 6 | fluentd-elasticsearch-kibana | done | |
-| 7 | aad-pod-identity | no | |
-| 8 | servicebus, kafka | no | |
-| 9 | jaeger, app-insights | no | |
+| 1 | nginx | done | dns zone (handled by azure terraform module) is pre-requirement |
+| 2 | external-dns | need imagePullSecrets | dns zone (handled by azure terraform module) is pre-requirement |
+| 3 | obtain access to linux-geneva acr | in progress | got AME card, need provision service principal and create ticket |
+| 4 | geneva-metrics | no | need provision new service principal to access geneva-linux acr |
+| 5 | geneva-service | no | need provision new service principal to access geneva-linux acr |
+| 6 | prometheus-grafana-alert-manager | done | need to deploy all resources to namespace 'prometheus' |
+| 7 | fluentd-elasticsearch-kibana | done | |
+| 8 | aad-pod-identity | in-progress | need to bind service |
+| 9 | servicebus, kafka | no | |
+| 10 | jaeger, app-insights | no | |
 
 ### HDL for services (helm)
 | order | HDL component | status |
 | -- | -- | -- |
-| 1 | prod-catalog-api | no |
-| 2 | prod-catalog-web | no |
-| 3 | prod-catalog-sync-job | no |
+| 1 | script to migrate to helm | in progress |
+| 1 | prod-catalog-api | in-progress |
+| 2 | prod-catalog-web | in-progress |
+| 3 | prod-catalog-sync-job | in-progress |
 
 ### build script to translate HDL to yamls
 | order | task | status |
 | -- | -- | -- |
 | 1 | ADO CI/CD pipeline | no |
+| 2 | support ADO git repo | no |
