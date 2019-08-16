@@ -46,6 +46,7 @@ consistency_level = "{{.Values.cosmosdb.consistency}}"
 cosmos_db_account = "{{.Values.cosmosdb.account}}"
 cosmos_db_name = "{{.Values.cosmosdb.db}}"
 cosmos_db_collections = "{{.Values.cosmosdb.collectionSettings}}"
+enable_filewall = "{{.Values.cosmosdb.enableFirewallRules}}"
 
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use

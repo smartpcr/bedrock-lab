@@ -49,6 +49,7 @@ cosmosdb:
   authKey: xiaodoli-bedrock-lab-authkey
   consistency: Strong
   failOverRegion: eastus
+  enableFirewallRules: false
   corpIpRanges: 0.0.0.0,104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26,24.17.206.116
   api: SQL
   db: product-catalog

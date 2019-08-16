@@ -513,6 +513,7 @@ UsingScope("Setup cosmosdb") {
             $collectionSettings += $collectionSetting
         }
         $settings.cosmosdb["collectionSettings"] = $collectionSettings
+        
     }
     else {
         LogInfo -Message "Skip setting up cosmosdb"

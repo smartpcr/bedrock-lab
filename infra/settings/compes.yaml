@@ -49,6 +49,7 @@ cosmosdb:
   authKey: compes-bedrock-lab-authkey
   consistency: Strong
   failOverRegion: eastus
+  enableFirewallRules: false
   corpIpRanges: 24.17.206.116
   api: SQL
   db: product-catalog
