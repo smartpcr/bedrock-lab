@@ -1,4 +1,4 @@
-## flow with gitops (flux), terraform, helm, fabrikate and bedrock
+## CI/CD with gitops (flux), terraform, helm, fabrikate and bedrock
 
 deployment artifacts can be grouped in the following categories:
 - azure resources: use terraform to sync states
