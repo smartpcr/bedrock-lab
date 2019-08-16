@@ -98,7 +98,7 @@ module "kv-reader" {
 
   resource_group_name             = "${var.resource_group_name}"
   location                        = "${var.resource_group_location}"
-  keyvault_name                   = "${var.keyvault_name}"
+  vault_name                      = "${var.vault_name}"
   vault_reader_identity           = "${var.vault_reader_identity}"
   aks_cluster_name                = "${var.cluster_name}"
   aks_cluster_resource_group_name = "${var.resource_group_name}"

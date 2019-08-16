@@ -504,7 +504,7 @@ UsingScope("Setup cosmosdb") {
         $collectionSettings = ""
         $settings.cosmosdb.collections | ForEach-Object {
             LogStep -Message "Collection: $($_.name)"
-            $partitionKey = if ($null -ne $_["partition"]) { $_["partition"] } else { "id" }
+            $partitionKey = if ($null -ne $_["partition"]) { $_["partition"] } else { "/id" }
             $throughput = if ($null -ne $_["throughput"]) { [int]$_["throughput"] } else { 400 }
             $collectionSetting = "$($_.name),$($partitionKey),$($throughput)"
             if ($collectionSettings.Length -gt 0) {
