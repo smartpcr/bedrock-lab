@@ -10,7 +10,7 @@ gitRepo:
   deployPublicKey: flux-deploy-pub
 kv:
   name: compes-bedrock-kv
-  readerSpn: compes-bedrock-kv-reader
+  reader: compes-bedrock-kv-reader
 terraform:
   clientAppName: compes-bedrock-terraform-spn
   clientSecret: compes-bedrock-terraform-spn-pwd

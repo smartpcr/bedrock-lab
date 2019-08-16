@@ -10,7 +10,7 @@ gitRepo:
   deployPublicKey: flux-deploy-pub
 kv:
   name: xiaodoli-bedrock-kv
-  readerSpn: xiaodoli-bedrock-kv-reader
+  reader: xiaodoli-bedrock-kv-reader
 terraform:
   clientAppName: xiaodoli-bedrock-terraform-spn
   clientSecret: xiaodoli-bedrock-terraform-spn-pwd

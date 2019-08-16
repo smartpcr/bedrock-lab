@@ -1,5 +1,10 @@
+# rg
 resource_group_name="{{.Values.aks.resourceGroup}}"
 resource_group_location="{{.Values.aks.location}}"
+
+# kv
+vault_name="{{.Values.kv.name}}"
+vault_reader_identity = "{{.Values.kv.reader}}"
 
 # aks
 cluster_name="{{.Values.aks.clusterName}}"
