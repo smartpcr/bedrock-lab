@@ -5,13 +5,15 @@ deployment artifacts can be grouped into 3 categories:
 - app code (services): use helm to push changes to aks
 - k8s infra: use helm to push changes to k8s
 
-building blocks: 
-- [fabrikate_definitions](https://github.com/smartpcr/fabrikate-definitions): 
+building blocks:
+- [fabrikate_definitions](https://github.com/smartpcr/fabrikate-definitions):
 - [hdl](https://github.com/smartpcr/hdl): defines high level services and aks infra components
 - [bedrock](https://github.com/smartpcr/bedrock): terraform modules
 - bedrock-lab (this repo): bootstrap
 - [git-deploy](https://github.com/smartpcr/git-deploy): generated yaml manifest to be synchronized into aks
 
+
+![flow](./docs/gitops.png)
 
 ## intro
 Before git repo and aks cluster can be synchronized, the following must be created first
@@ -29,7 +31,7 @@ In addition, the following modification are made to aks cluster:
 5. aad users and groups can be granted contributor/reader role in aks cluster
 6. install helm/tiller
 
-## steps 
+## steps
 _note: execute scripts in mac or linux, there are some gliches with WSL_
 1. modify `setting.yaml` file to point to your subscription, and where you want it to be created
 2. run `bootstrap-aks.ps1`
