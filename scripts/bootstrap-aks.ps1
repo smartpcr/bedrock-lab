@@ -508,7 +508,7 @@ UsingScope("Setup cosmosdb") {
             $throughput = if ($null -ne $_["throughput"]) { [int]$_["throughput"] } else { 400 }
             $collectionSetting = "$($_.name),$($partitionKey),$($throughput)"
             if ($collectionSettings.Length -gt 0) {
-                $collectionSettings += ";"
+                $collectionSettings += "*"
             }
             $collectionSettings += $collectionSetting
         }
