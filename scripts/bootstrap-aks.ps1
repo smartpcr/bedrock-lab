@@ -553,9 +553,10 @@ UsingScope("Setup terraform variables") {
         Remove-Item $terraformInitFolder -Recurse -Force
     }
 
-    $terraformShellScriptFile = Join-Path $scriptFolder "bootstrap-aks.sh"
+    $terraformShellScriptFile = Join-Path $scriptFolder "run-terraform.sh"
     $scriptContent = Get-Content $terraformShellScriptFile -Raw
     $scriptContent = Set-YamlValues -ValueTemplate $scriptContent -Settings $settings
-    $terraformShellFile = Join-Path $terraformOutputFolder "terraform.sh"
+    $terraformShellFile = Join-Path $terraformOutputFolder "run-terraform.sh"
     $scriptContent | Out-File $terraformShellFile -Encoding ascii -Force | Out-Null
+    Invoke-Expression "chmod +x `"$terraformShellFile`""
 }

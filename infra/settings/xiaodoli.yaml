@@ -24,8 +24,8 @@ aks:
   serverSecret: AppCenter-AKS-AADAppPwd
   clientApp: App Center AKS (non-production)
   clusterName: xiaodoli-bedrock-lab
-  nodeCount: 3
-  vmSize: "Standard_D4s_v3"
+  nodeCount: 2
+  vmSize: "Standard_D2s_v3"
   dnsPrefix: bedrock-lab
   virtualNetwork: bedrock-vnet
   ssh:
