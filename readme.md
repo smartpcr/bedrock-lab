@@ -61,16 +61,17 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 ### HDL for infra
 | order | HDL component | status | notes |
 | -- | -- | -- | -- |
-| 1 | nginx | done | dns zone (handled by azure terraform module) is pre-requirement |
-| 2 | external-dns | need imagePullSecrets | dns zone (handled by azure terraform module) is pre-requirement |
-| 3 | obtain access to linux-geneva acr | in progress | got AME card, need provision service principal and create ticket |
-| 4 | geneva-metrics | no | need provision new service principal to access geneva-linux acr |
-| 5 | geneva-service | no | need provision new service principal to access geneva-linux acr |
-| 6 | prometheus-grafana-alert-manager | done | need to deploy all resources to namespace 'prometheus' |
-| 7 | fluentd-elasticsearch-kibana | done | |
-| 8 | aad-pod-identity | in-progress | need to bind service |
-| 9 | servicebus, kafka | no | |
-| 10 | jaeger, app-insights | no | |
+| 1 | [key vault controller](https://github.com/SparebankenVest/azure-key-vault-to-kubernetes) | in-progress | sync secrets and certs from kv to k8s |
+| 2 | aad-pod-identity | in-progress | need to bind service |
+| 3 | nginx | done | dns zone (handled by azure terraform module) is pre-requirement |
+| 4 | external-dns | need imagePullSecrets | dns zone (handled by azure terraform module) is pre-requirement |
+| 5 | linux-geneva | done | got AME card, provision service principal, grant access, store secrets |
+| 6 | geneva-metrics | no | need provision new service principal to access geneva-linux acr |
+| 7 | geneva-service | no | need provision new service principal to access geneva-linux acr |
+| 8 | prometheus-grafana-alert-manager | done | need to deploy all resources to namespace 'prometheus' |
+| 9 | fluentd-elasticsearch-kibana | done | |
+| 10 | servicebus, kafka | no | |
+| 11 | jaeger, app-insights | no | |
 
 ### HDL for services (helm)
 | order | HDL component | status |
