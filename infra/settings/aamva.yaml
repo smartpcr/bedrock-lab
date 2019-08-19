@@ -33,7 +33,7 @@ aks:
     publicKey: "aama-bedrock-aks-ssh-pub"
     privateKeyPwd: "aama-bedrock-aks-ssh-key-pwd"
 acr:
-  name: aamva-bedrock-acr
+  name: aamvabedrockacr
   email: lingxd@gmail.com
   auth_secret: aamva-bedrock-acr-auth
 dns:

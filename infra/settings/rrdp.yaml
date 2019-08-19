@@ -33,7 +33,7 @@ aks:
     publicKey: "rrdp-bedrock-aks-ssh-pub"
     privateKeyPwd: "rrdp-bedrock-aks-ssh-key-pwd"
 acr:
-  name: rrdp-bedrock-acr
+  name: rrdpbedrockacr
   email: lingxd@gmail.com
   auth_secret: rrdp-bedrock-acr-auth
 dns:

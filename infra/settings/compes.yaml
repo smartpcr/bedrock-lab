@@ -42,7 +42,7 @@ aks:
     - name: "1cs dri"
       type: group
 acr:
-  name: compes-bedrock-acr
+  name: compesbedrockacr
   email: xiaodoli@microsoft.com
   auth_secret: compes-bedrock-acr-auth
 dns:
