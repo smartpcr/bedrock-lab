@@ -19,6 +19,7 @@ $scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
+$moduleFolder = Join-Path $scriptFolder "modules"
 Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Sync-LinuxGeneva-ACR"
