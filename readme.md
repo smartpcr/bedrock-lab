@@ -57,6 +57,7 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 | 12 | app-insights | done | |
 | 13 | kv backup/master | done | enable soft delete, add delete lock, sync and pre-populate secrets/certs |
 | 14 | acr backup/master | done | add delete lock, sync and pre-populate base docker images, infra images |
+| 15 | acr | done | store docker-registry-json in kv |
 
 ### HDL for infra
 | order | HDL component | status | notes |
