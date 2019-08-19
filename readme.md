@@ -13,6 +13,8 @@ building blocks:
 - [git-deploy](https://github.com/smartpcr/git-deploy): generated yaml manifest to be synchronized into aks
 
 
+![flow](./docs/gitops.png)
+
 ## intro
 Before git repo and aks cluster can be synchronized, the following must be created first
  - aks cluster
