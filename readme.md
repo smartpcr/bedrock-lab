@@ -65,7 +65,7 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 | 1 | [key vault controller](https://github.com/SparebankenVest/azure-key-vault-to-kubernetes) | in-progress | sync secrets and certs from kv to k8s |
 | 2 | aad-pod-identity | in-progress | need to bind service |
 | 3 | nginx | done | dns zone (handled by azure terraform module) is pre-requirement |
-| 4 | external-dns | need imagePullSecrets | dns zone (handled by azure terraform module) is pre-requirement |
+| 4 | external-dns | validating | need imagePullSecrets, azure-config-file |
 | 5 | linux-geneva | done | got AME card, provision service principal, grant access, store secrets |
 | 6 | geneva-metrics | no | need provision new service principal to access geneva-linux acr |
 | 7 | geneva-service | no | need provision new service principal to access geneva-linux acr |
