@@ -105,3 +105,14 @@ module "kv-reader" {
   aks_cluster_resource_group_name = "${var.resource_group_name}"
   aks_cluster_location            = "${var.resource_group_location}"
 }
+
+module "app-insights" {
+  source = "github.com/smartpcr/bedrock/cluster/azure/app-insights"
+
+  resource_group_name             = "${var.resource_group_name}"
+  location                        = "${var.resource_group_location}"
+  name                            = "${var.app_insights_name}"
+  vault_name                      = "${var.vault_name}"
+  instrumentation_key_secret_name = "app_insights_instrumentation_key"
+  app_id_secret_name              = "app_insights_app_id"
+}

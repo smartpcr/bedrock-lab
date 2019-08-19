@@ -49,6 +49,9 @@ cosmos_db_name = "{{.Values.cosmosdb.db}}"
 cosmos_db_collections = "{{.Values.cosmosdb.collectionSettings}}"
 enable_filewall = "{{.Values.cosmosdb.enableFirewallRules}}"
 
+# app insights
+app_insights_name = "{{.Values.appInsights.name}}"
+
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use
 #--------------------------------------------------------------

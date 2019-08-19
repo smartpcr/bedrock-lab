@@ -88,3 +88,5 @@ cosmosdb:
       partition: "/partitionKey"
     - name: "ps-lease"
       partition: "/id"
+appInsights:
+  name: compes-bedrock-ai

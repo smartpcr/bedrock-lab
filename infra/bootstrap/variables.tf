@@ -271,3 +271,11 @@ variable "aks_cluster_spn_name" {
   type        = "string"
   description = "name of AKS cluster service principal"
 }
+
+###########################
+# app insights
+###########################
+variable "app_insights_name" {
+  type = "string"
+  description = "name of app insights"
+}

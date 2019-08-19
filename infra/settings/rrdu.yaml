@@ -35,3 +35,5 @@ aks:
 dns:
   name: dev.1es.io
   caaIssuer: letsencrypt.org # use microsoft when CA is internal
+appInsights:
+  name: rrdu-bedrock-ai
