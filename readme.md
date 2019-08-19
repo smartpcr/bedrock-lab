@@ -54,9 +54,9 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 | 9 | dns zone | done | |
 | 10 | cosmos-db | done | consistency level was using default values for `Session`, but validation failed, reapplaying takes > 10 min! |
 | 11 | user assigned identity and required permissions | done | takes a long time till identity is propagated and available for role assignment |
-| 12 | app-insights | in-progress | |
-| 13 | kv backup/master | in progress | enable soft delete, add delete lock, sync and pre-populate secrets/certs |
-| 14 | acr backup/master | in progress | add delete lock, sync and pre-populate base docker images, infra images |
+| 12 | app-insights | done | |
+| 13 | kv backup/master | done | enable soft delete, add delete lock, sync and pre-populate secrets/certs |
+| 14 | acr backup/master | done | add delete lock, sync and pre-populate base docker images, infra images |
 
 ### HDL for infra
 | order | HDL component | status | notes |
