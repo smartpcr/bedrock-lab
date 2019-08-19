@@ -35,6 +35,11 @@ gitops_ssh_key = "{{.Values.gitRepo.deployPrivateKeyFile}}"
 enable_flux = "true"
 flux_recreate = "true"
 
+# acr
+acr_name = "{{.Values.acr.name}}"
+acr_auth_secret_name = "{{.Values.acr.auth_secret}}"
+acr_email = "{{.Values.acr.email}}"
+
 # DNS zone
 dns_zone_name = "{{.Values.dns.name}}"
 dns_caa_issuer = "{{.Values.dns.caaIssuer}}"

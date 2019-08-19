@@ -41,6 +41,10 @@ aks:
   readers:
     - name: "1cs dri"
       type: group
+acr:
+  name: compes-bedrock-acr
+  email: xiaodoli@microsoft.com
+  auth_secret: compes-bedrock-acr-auth
 dns:
   name: dev.1es.io
   caaIssuer: letsencrypt.org # use microsoft when CA is internal

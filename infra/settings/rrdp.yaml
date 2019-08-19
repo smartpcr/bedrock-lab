@@ -32,6 +32,10 @@ aks:
     privateKey: "rrdp-bedrock-aks-ssh-key"
     publicKey: "rrdp-bedrock-aks-ssh-pub"
     privateKeyPwd: "rrdp-bedrock-aks-ssh-key-pwd"
+acr:
+  name: rrdp-bedrock-acr
+  email: lingxd@gmail.com
+  auth_secret: rrdp-bedrock-acr-auth
 dns:
   name: dev.1es.io
   caaIssuer: letsencrypt.org # use microsoft when CA is internal

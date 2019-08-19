@@ -71,6 +71,17 @@ module "aks-gitops" {
   gitops_url_branch    = "${var.gitops_url_branch}"
 }
 
+module "acr" {
+  source = "github.com/smartpcr/bedrock/cluster/azure/acr"
+
+  resource_group_name  = "${var.resource_group_name}"
+  location             = "${var.resource_group_location}"
+  name                 = "${var.acr_name}"
+  vault_name           = "${var.vault_name}"
+  acr_auth_secret_name = "${var.acr_auth_secret_name}"
+  email                = "${var.acr_email}"
+}
+
 module "dns" {
   source = "github.com/smartpcr/bedrock/cluster/azure/dns"
 

@@ -32,6 +32,10 @@ aks:
     privateKey: "aama-bedrock-aks-ssh-key"
     publicKey: "aama-bedrock-aks-ssh-pub"
     privateKeyPwd: "aama-bedrock-aks-ssh-key-pwd"
+acr:
+  name: aamva-bedrock-acr
+  email: lingxd@gmail.com
+  auth_secret: aamva-bedrock-acr-auth
 dns:
   name: dev.1es.io
   caaIssuer: letsencrypt.org # use microsoft when CA is internal

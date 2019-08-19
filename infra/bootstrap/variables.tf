@@ -2,7 +2,7 @@
 # global
 ###########################
 variable "service_principal_object_id" {
-  type = "string"
+  type        = "string"
   description = "service principal object id who can read and write dns text records"
 }
 
@@ -58,22 +58,22 @@ variable "service_principal_secret" {
 }
 
 variable "server_app_id" {
-  type = "string"
+  type        = "string"
   description = "(Required) The Server ID of an Azure Active Directory Application. Changing this forces a new resource to be created."
 }
 
 variable "client_app_id" {
-  type = "string"
-  description="(Required) The Client ID of an Azure Active Directory Application. Changing this forces a new resource to be created."
+  type        = "string"
+  description = "(Required) The Client ID of an Azure Active Directory Application. Changing this forces a new resource to be created."
 }
 
 variable "server_app_secret" {
-  type = "string"
-  description="(Required) The Server Secret of an Azure Active Directory Application. Changing this forces a new resource to be created."
+  type        = "string"
+  description = "(Required) The Server Secret of an Azure Active Directory Application. Changing this forces a new resource to be created."
 }
 
 variable "tenant_id" {
-  type = "string"
+  type        = "string"
   description = "(Optional) The Tenant ID used for Azure Active Directory Application. If this isn't specified the Tenant ID of the current Subscription is used. Changing this forces a new resource to be created."
 }
 
@@ -136,21 +136,21 @@ variable "space_name" {
 }
 
 variable "aks_owners" {
-  type = "string"
+  type        = "string"
   description = "comma separated aad user object id who are granted to cluster cluster admins"
-  default = ""
+  default     = ""
 }
 
 variable "aks_contributors" {
-  type = "string"
+  type        = "string"
   description = "comma separated aad group object id who are contributors to aks"
-  default = ""
+  default     = ""
 }
 
 variable "aks_readers" {
-  type = "string"
+  type        = "string"
   description = "comma separated aad group object id who are readers to aks"
-  default = ""
+  default     = ""
 }
 
 ###########################
@@ -196,46 +196,63 @@ variable "gitops_url_branch" {
   default = "master"
 }
 
+###########################
+# acr
+###########################
+
+variable "acr_name" {
+  type        = "string"
+  description = "name of acr"
+}
+
+variable "acr_auth_secret_name" {
+  type        = "string"
+  description = "Secret name for username used to login docker"
+}
+
+variable "acr_email" {
+  type        = "string"
+  description = "email of acr owner"
+}
 
 # DNS Zone
 variable "dns_zone_name" {
-  type = "string"
+  type        = "string"
   description = "name of dns zone, redirect traffic under a zone, i.e. dev.1cs.io"
 }
 
 variable "dns_caa_issuer" {
-  type = "string"
+  type        = "string"
   description = "name of issuer that can be trusted, i.e. letsencrypt.org"
 }
-
 
 ###########################
 # CosmosDB
 ###########################
 variable "cosmos_db_account" {
-  type = "string"
+  type        = "string"
   description = "name of cosmosdb account"
 }
 
 variable "alt_location" {
-  type = "string"
+  type        = "string"
   description = "The Azure Region which should be used for the alternate location when failed over."
 }
 
 variable "consistency_level" {
-  type = "string"
+  type        = "string"
   description = "cosmosdb consistency level: BoundedStaleness, Eventual, Session, Strong, ConsistentPrefix"
-  default = "Session"
+  default     = "Session"
 }
 
 variable "enable_filewall" {
-  type = "string"
+  type        = "string"
   description = "Specify if firewall rules should be applied"
-  default = "false"
+  default     = "false"
 }
 
 variable "allowed_ip_ranges" {
-  type = "string"
+  type        = "string"
   description = "allowed ip range in addition to azure services and azure portal, i.e. 12.54.145.0/24,13.75.0.0/16"
 }
 
@@ -250,7 +267,7 @@ variable "cosmos_db_name" {
 }
 
 variable "cosmos_db_collections" {
-  type    = "string"
+  type        = "string"
   description = "collections are separated by ';', each entry takes the format: collection_name,partiton_key,throughput"
 }
 
@@ -258,7 +275,7 @@ variable "cosmos_db_collections" {
 # kv reader
 ###########################
 variable "vault_name" {
-  type = "string"
+  type        = "string"
   description = "name of key vault, must be unique within resource group"
 }
 
@@ -276,6 +293,6 @@ variable "aks_cluster_spn_name" {
 # app insights
 ###########################
 variable "app_insights_name" {
-  type = "string"
+  type        = "string"
   description = "name of app insights"
 }
