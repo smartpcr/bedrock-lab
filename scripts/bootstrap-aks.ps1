@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingName = "xiaodoli"
+    [string] $SettingName = "compes"
 )
 
 $ErrorActionPreference = "Stop"
@@ -76,18 +76,33 @@ UsingScope("Ensure kv") {
     }
 }
 
+# UsingScope("Ensure identity for kv reader") {
+#     LogStep -Message "Ensure user-assigned identity '$($settings.kv.reader)' is created in resource group '$($settings.global.resourceGroup.name)'"
+#     [array]$existingIdentities = az identity list --resource-group $settings.global.resourceGroup.name --query "[?name=='$($settings.kv.reader)']" | ConvertFrom-Json
+#     if ($null -eq $existingIdentities -or $existingIdentities.Count -eq 0) {
+#         LogStep -Message "Creating new user-assigned identity '$($settings.kv.reader)'"
+#         $identity = az identity create -g $settings.global.resourceGroup.name -n $settings.kv.reader | ConvertFrom-Json
+
+#         $scopeIds = New-Object System.Collections.ArrayList
+#         $rgId = $(az group show --name $settings.global.resourceGroup.name | ConvertFrom-Json).id
+#         $scopeIds.Add($rgId) | Out-Null
+#         $mcRgName = "MC_$($settings.global.resourceGroup.name)_$($settings.aks.clusterName)_$($settings.global.resourceGroup.location)"
+#         $mcRgId = $(az group create --name $mcRgName --location $settings.global.resourceGroup.location | ConvertFrom-Json).id
+#     }
+# }
+
 UsingScope("Ensure terraform spn") {
     [array]$terraformSpnsFound = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
     [string]$terraformSpnPwdValue = $null
     [bool]$isSpnNewlyCreated = $false
     $certName = $settings.terraform.clientAppName
-    if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
-        LogStep -Message "Ensure terraform app cert is created"
-        EnsureCertificateInKeyVault `
-            -VaultName $settings.kv.name `
-            -CertName $certName `
-            -ScriptFolder $ScriptFolder
+    LogStep -Message "Ensure terraform app cert is created"
+    EnsureCertificateInKeyVault `
+        -VaultName $settings.kv.name `
+        -CertName $certName `
+        -ScriptFolder $ScriptFolder
 
+    if ($null -eq $terraformSpnsFound -or $terraformSpnsFound.Count -eq 0) {
         LogStep -Message "Create terraform app with cert authentication"
         az ad sp create-for-rbac `
             -n $settings.terraform.clientAppName `
@@ -119,6 +134,7 @@ UsingScope("Ensure terraform spn") {
     }
     else {
         $terraformSpn = $terraformSpnsFound[0]
+        az ad sp credential reset --name $terraformSpn.appId --cert $certName --keyvault $settings.kv.name --append | Out-Null
     }
 
     if ($null -eq $terraformSpnPwdValue -or $terraformSpnPwdValue.Length -eq 0) {
@@ -161,6 +177,43 @@ UsingScope("Ensure terraform spn") {
         LogInfo -Message "Switch back to user mode"
         LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName | Out-Null
     }
+
+    LogStep -Message "Grant KV permission to terraform spn"
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --key-permissions backup create decrypt delete encrypt get import list purge recover restore sign unwrapKey update verify wrapKey `
+        --object-id $terraformSpn.objectId | Out-Null
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --certificate-permissions backup create delete deleteissuers get getissuers import list listissuers managecontacts manageissuers purge recover restore setissuers update `
+        --object-id $terraformSpn.objectId | Out-Null
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --secret-permissions backup delete get list purge recover restore set `
+        --object-id $terraformSpn.objectId | Out-Null
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --storage-permissions backup delete deletesas get getsas list listsas purge recover regeneratekey restore set setsas update `
+        --object-id $terraformSpn.objectId | Out-Null
+
+    LogStep -Message "Grant KV permission to terraform app" # this is required to grant additional privileges assign access policies
+    $terraformApp = az ad app show --id $terraformSpn.appId | ConvertFrom-Json
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --key-permissions backup create decrypt delete encrypt get import list purge recover restore sign unwrapKey update verify wrapKey `
+        --object-id $terraformApp.objectId | Out-Null
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --certificate-permissions backup create delete deleteissuers get getissuers import list listissuers managecontacts manageissuers purge recover restore setissuers update `
+        --object-id $terraformApp.objectId | Out-Null
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --secret-permissions backup delete get list purge recover restore set `
+        --object-id $terraformApp.objectId | Out-Null
+    az keyvault set-policy `
+        -n $settings.kv.name `
+        --storage-permissions backup delete deletesas get getsas list listsas purge recover regeneratekey restore set setsas update `
+        --object-id $terraformApp.objectId | Out-Null
 
     $settings.terraform["spn"] = @{
         appId    = $terraformSpn.appId

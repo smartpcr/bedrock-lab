@@ -5,8 +5,8 @@ deployment artifacts can be grouped into 3 categories:
 - app code (services): use helm to push changes to aks
 - k8s infra: use helm to push changes to k8s
 
-building blocks: 
-- [fabrikate_definitions](https://github.com/smartpcr/fabrikate-definitions): 
+building blocks:
+- [fabrikate_definitions](https://github.com/smartpcr/fabrikate-definitions):
 - [hdl](https://github.com/smartpcr/hdl): defines high level services and aks infra components
 - [bedrock](https://github.com/smartpcr/bedrock): terraform modules
 - bedrock-lab (this repo): bootstrap
@@ -29,7 +29,7 @@ In addition, the following modification are made to aks cluster:
 5. aad users and groups can be granted contributor/reader role in aks cluster
 6. install helm/tiller
 
-## steps 
+## steps
 _note: execute scripts in mac or linux, there are some gliches with WSL_
 1. modify `setting.yaml` file to point to your subscription, and where you want it to be created
 2. run `bootstrap-aks.ps1`
@@ -39,20 +39,20 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 ## progress
 
 ### Bootstrap
-| order | task | status |
-| -- | -- | -- |
-| 1 | provision flux and aks cluster | done |
-| 2 | output admin kube config | done |
-| 3 | integrate aad profile | done |
-| 4 | additional addons (routing, monitoring, devspaces) | done |
-| 5 | grant dashboard access | done |
-| 6 | grant additional aad user and groups | done |
-| 7 | update deploy-key, repo-url in flux settings and enable sync | done |
-| 8 | enable remote tf state using azure blob storage | done |
-| 9 | dns zone | done |
-| 10 | cosmos-db | done |
-| 11 | user assigned identity and required permissions | need validation |
-| 12 | app-insights | in-progress |
+| order | task | status | comments |
+| -- | -- | -- | -- |
+| 1 | provision flux and aks cluster | done | |
+| 2 | output admin kube config | done | |
+| 3 | integrate aad profile | done | |
+| 4 | additional addons (routing, monitoring, devspaces) | done | |
+| 5 | grant dashboard access | done | |
+| 6 | grant additional aad user and groups | done | |
+| 7 | update deploy-key, repo-url in flux settings and enable sync | done | |
+| 8 | enable remote tf state using azure blob storage | done | |
+| 9 | dns zone | done | |
+| 10 | cosmos-db | done | consistency level was using default values for `Session`, but validation failed, reapplaying takes > 10 min! |
+| 11 | user assigned identity and required permissions | done | takes a long time till identity is propagated and available for role assignment |
+| 12 | app-insights | in-progress | |
 
 ### HDL for infra
 | order | HDL component | status | notes |
