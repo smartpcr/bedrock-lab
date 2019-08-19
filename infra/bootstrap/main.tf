@@ -80,6 +80,7 @@ module "acr" {
   vault_name           = "${var.vault_name}"
   acr_auth_secret_name = "${var.acr_auth_secret_name}"
   email                = "${var.acr_email}"
+  alternate_location   = "${var.acr_failover_location}"
 }
 
 module "dns" {

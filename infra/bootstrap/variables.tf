@@ -215,7 +215,15 @@ variable "acr_email" {
   description = "email of acr owner"
 }
 
+variable "acr_failover_location" {
+  type        = "string"
+  description = "failover location for acr"
+  default     = "eastus"
+}
+
+###########################
 # DNS Zone
+###########################
 variable "dns_zone_name" {
   type        = "string"
   description = "name of dns zone, redirect traffic under a zone, i.e. dev.1cs.io"
