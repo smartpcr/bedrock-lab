@@ -4,6 +4,7 @@ param(
     [string]$VaultName = "xiaodong-kv",
     [string]$SpnAppId = "c33eca9e-d787-4955-b9ff-b61b2b2ebc73",
     [string]$SpnPwdSecretName = "sace-acr-spn-pwd",
+    [string]$SubscriptionName = "Compliance_Tools_Eng",
     [string]$TargetAcrName = "xiaodongacr",
     [string]$TargetAcrPwdSecretName = "xiaodongacr-pwd"
 )
@@ -23,7 +24,7 @@ $moduleFolder = Join-Path $scriptFolder "modules"
 Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Sync-LinuxGeneva-ACR"
-LoginAzureAsUser -SubscriptionName $SrcSubscriptionName | Out-Null
+LoginAzureAsUser -SubscriptionName $SubscriptionName | Out-Null
 
 UsingScope("Retrieving acr pwd") {
     $SpnPwdSecret = az keyvault secret show --vault-name $VaultName --name $SpnPwdSecretName | ConvertFrom-Json
@@ -49,7 +50,7 @@ UsingScope("Sync docker images from '$AcrName' to '$TargetAcrName'") {
         LogStep -Message "Syncing repo $RepositoryName..."
 
         LogInfo -Message "Getting latest image tag"
-        $imageTags = Invoke-RestMethod -Headers @{Authorization = ("Basic {0}" -f $base64AuthInfo) } -Method Get -Uri "https://$AcrName.azurecr.io/v2/$($RepositoryName)/tags/list"
+        $imageTags = Invoke-RestMethod -Headers @{Authorization = ("Basic {0}" -f $SrcAcrAuthHeader) } -Method Get -Uri "https://$AcrName.azurecr.io/v2/$($RepositoryName)/tags/list"
         $tag = ""
         [Int64] $lastTag = 0
         $imageTags.tags | ForEach-Object {
@@ -70,15 +71,15 @@ UsingScope("Sync docker images from '$AcrName' to '$TargetAcrName'") {
         if ($tag -eq "") {
             throw "Failed to get image tag"
         }
-        LogInfo -Message "Picking tag '$lastTag'"
+        LogInfo -Message "Picking tag '$tag'"
 
         LogInfo -Message "Login to '$AcrName'"
         $SrcAcrPwd | docker login "$AcrName.azurecr.io" --username $SpnAppId --password-stdin | Out-Null
 
-        $SourceImage = "$($AcrName).azurecr.io/$($RepositoryName):$($lastTag)"
+        $SourceImage = "$($AcrName).azurecr.io/$($RepositoryName):$($tag)"
         LogInfo -Message "Pulling image '$SourceImage'..."
         docker pull $SourceImage
-        $TargetImage = "$($TargetAcrName).azurecr.io/$($RepositoryName):$($lastTag)"
+        $TargetImage = "$($TargetAcrName).azurecr.io/$($RepositoryName):$($tag)"
         docker tag $SourceImage $TargetImage
 
         LogInfo -Message "Login to '$TargetAcrName'"

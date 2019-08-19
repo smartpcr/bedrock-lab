@@ -178,3 +178,12 @@ fi
 
 echo "remove keys"
 rm packages-microsoft-prod.deb
+
+echo "install docker"
+if [ -f "/usr/bin/docker" ]; then
+    echo "docker already installed"
+else
+    sudo apt-get install docker.io
+    sudo systemctl enable docker.service
+    sudo systemctl start docker
+fi
