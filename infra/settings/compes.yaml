@@ -1,7 +1,7 @@
 global:
   subscriptionName: "Compliance_Tools_Eng"
   resourceGroup:
-    name: compes-bedrock-lab
+    name: bedrock-lab-rg
     location: westus2
 gitRepo:
   teamOrUser: smartpcr

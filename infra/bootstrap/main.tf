@@ -31,7 +31,6 @@ module "aks-gitops" {
   service_cidr             = "${var.service_cidr}"
   dns_ip                   = "${var.dns_ip}"
   docker_cidr              = "${var.docker_cidr}"
-  network_policy           = "${var.network_policy}"
   oms_agent_enabled        = "${var.oms_agent_enabled}"
   enable_dev_spaces        = "${var.enable_dev_spaces}"
   space_name               = "${var.space_name}"
@@ -82,17 +81,17 @@ module "dns" {
   caa_issuer                  = "${var.dns_caa_issuer}"
 }
 
-module "cosmosdb" {
-  source = "github.com/smartpcr/bedrock/cluster/azure/cosmos-sqldb"
+# module "cosmosdb" {
+#   source = "github.com/smartpcr/bedrock/cluster/azure/cosmos-sqldb"
 
-  resource_group_name   = "${var.resource_group_name}"
-  location              = "${var.resource_group_location}"
-  cosmos_db_account     = "${var.cosmos_db_account}"
-  alt_location          = "${var.alt_location}"
-  cosmos_db_name        = "${var.cosmos_db_name}"
-  cosmos_db_collections = "${var.cosmos_db_collections}"
-  allowed_ip_ranges     = "${var.allowed_ip_ranges}"
-}
+#   resource_group_name   = "${var.resource_group_name}"
+#   location              = "${var.resource_group_location}"
+#   cosmos_db_account     = "${var.cosmos_db_account}"
+#   alt_location          = "${var.alt_location}"
+#   cosmos_db_name        = "${var.cosmos_db_name}"
+#   cosmos_db_collections = "${var.cosmos_db_collections}"
+#   allowed_ip_ranges     = "${var.allowed_ip_ranges}"
+# }
 
 module "app-insights" {
   source = "github.com/smartpcr/bedrock/cluster/azure/app-insights"
