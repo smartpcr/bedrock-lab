@@ -53,6 +53,11 @@ module "aks-gitops" {
   gitops_path          = "${var.gitops_path}"
   gitops_poll_interval = "${var.gitops_poll_interval}"
   gitops_url_branch    = "${var.gitops_url_branch}"
+
+  # kv-reader
+  vault_name                      = "${var.vault_name}"
+  vault_reader_identity           = "${var.vault_reader_identity}"
+  aks_cluster_spn_name            = "${var.aks_cluster_spn_name}"
 }
 
 module "acr" {
@@ -87,19 +92,6 @@ module "cosmosdb" {
   cosmos_db_name        = "${var.cosmos_db_name}"
   cosmos_db_collections = "${var.cosmos_db_collections}"
   allowed_ip_ranges     = "${var.allowed_ip_ranges}"
-}
-
-module "kv-reader" {
-  source = "github.com/smartpcr/bedrock/cluster/azure/key-vault-reader"
-
-  resource_group_name             = "${var.resource_group_name}"
-  location                        = "${var.resource_group_location}"
-  vault_name                      = "${var.vault_name}"
-  vault_reader_identity           = "${var.vault_reader_identity}"
-  aks_cluster_name                = "${var.cluster_name}"
-  aks_cluster_spn_name            = "${var.aks_cluster_spn_name}"
-  aks_cluster_resource_group_name = "${var.resource_group_name}"
-  aks_cluster_location            = "${var.resource_group_location}"
 }
 
 module "app-insights" {
