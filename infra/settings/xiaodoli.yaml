@@ -94,3 +94,6 @@ cosmosdb:
       partition: "/id"
 appInsights:
   name: xiaodoli-bedrock-ai
+  secrets:
+    instrumentationKey: xiaodoli-bedrock-ai-instrumentation-key
+    appId: xiaodoli-bedrock-ai-app-id

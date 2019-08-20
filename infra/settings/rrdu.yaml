@@ -41,3 +41,6 @@ dns:
   caaIssuer: letsencrypt.org # use microsoft when CA is internal
 appInsights:
   name: rrdu-bedrock-ai
+  secrets:
+    instrumentationKey: rrdu-bedrock-ai-instrumentation-key
+    appId: rrdu-bedrock-ai-app-id

@@ -109,6 +109,6 @@ module "app-insights" {
   location                        = "${var.resource_group_location}"
   name                            = "${var.app_insights_name}"
   vault_name                      = "${var.vault_name}"
-  instrumentation_key_secret_name = "app-insights-instrumentation-key"
-  app_id_secret_name              = "app-insights-app-id"
+  instrumentation_key_secret_name = "${var.app_insights_instrumentation_key_secret_name}"
+  app_id_secret_name              = "${var.app_insights_app_id_secret_name}"
 }

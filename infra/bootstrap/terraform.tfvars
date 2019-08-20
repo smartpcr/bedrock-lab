@@ -56,6 +56,8 @@ enable_filewall = "{{.Values.cosmosdb.enableFirewallRules}}"
 
 # app insights
 app_insights_name = "{{.Values.appInsights.name}}"
+app_insights_instrumentation_key_secret_name = "{{.Values.appInsights.secrets.instrumentationKey}}"
+app_insights_app_id_secret_name = "{{.Values.appInsights.secrets.appId}}"
 
 #--------------------------------------------------------------
 # Optional variables - Uncomment to use

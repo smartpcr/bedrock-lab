@@ -304,3 +304,11 @@ variable "app_insights_name" {
   type        = "string"
   description = "name of app insights"
 }
+
+variable "app_insights_instrumentation_key_secret_name" {
+  type = "string"
+}
+
+variable "app_insights_app_id_secret_name" {
+  type = "string"
+}

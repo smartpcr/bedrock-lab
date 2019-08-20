@@ -41,3 +41,6 @@ dns:
   caaIssuer: letsencrypt.org # use microsoft when CA is internal
 appInsights:
   name: aamva-bedrock-ai
+  secrets:
+    instrumentationKey: aamva-bedrock-ai-instrumentation-key
+    appId: aamva-bedrock-ai-app-id

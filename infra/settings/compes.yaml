@@ -3,6 +3,9 @@ global:
   resourceGroup:
     name: compes-bedrock-lab
     location: westus2
+  backup:
+    kv: xiaodong-kv
+    acr: xiaodongacr
 gitRepo:
   teamOrUser: smartpcr
   name: git-deploy
@@ -94,3 +97,6 @@ cosmosdb:
       partition: "/id"
 appInsights:
   name: compes-bedrock-ai
+  secrets:
+    instrumentationKey: compes-bedrock-ai-instrumentation-key
+    appId: compes-bedrock-ai-app-id
