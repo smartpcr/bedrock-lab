@@ -28,7 +28,6 @@ module "aks-gitops" {
   agent_vm_size            = "${var.agent_vm_size}"
   cluster_name             = "${var.cluster_name}"
   dns_prefix               = "${var.dns_prefix}"
-  vnet_subnet_id           = "${module.vnet.vnet_subnet_ids[0]}"
   service_cidr             = "${var.service_cidr}"
   dns_ip                   = "${var.dns_ip}"
   docker_cidr              = "${var.docker_cidr}"
