@@ -197,6 +197,24 @@ variable "gitops_url_branch" {
 }
 
 ###########################
+# kv reader
+###########################
+variable "vault_name" {
+  type        = "string"
+  description = "name of key vault, must be unique within resource group"
+}
+
+variable "vault_reader_identity" {
+  type        = "string"
+  description = "user assigned identity name that will be granted reader role to key vault"
+}
+
+variable "aks_cluster_spn_name" {
+  type        = "string"
+  description = "name of AKS cluster service principal"
+}
+
+###########################
 # acr
 ###########################
 
@@ -277,24 +295,6 @@ variable "cosmos_db_name" {
 variable "cosmos_db_collections" {
   type        = "string"
   description = "collections are separated by ';', each entry takes the format: collection_name,partiton_key,throughput"
-}
-
-###########################
-# kv reader
-###########################
-variable "vault_name" {
-  type        = "string"
-  description = "name of key vault, must be unique within resource group"
-}
-
-variable "vault_reader_identity" {
-  type        = "string"
-  description = "user assigned identity name that will be granted reader role to key vault"
-}
-
-variable "aks_cluster_spn_name" {
-  type        = "string"
-  description = "name of AKS cluster service principal"
 }
 
 ###########################
