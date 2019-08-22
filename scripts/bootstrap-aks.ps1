@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingName = "compes"
+    [string] $SettingName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
@@ -471,7 +471,12 @@ UsingScope("Set deployment key") {
     }
 
     if ($null -eq $deployPrivateKeyFound -or $null -eq $deployPubKeyFound -or $deployPrivateKeyFound.Count -eq 0 -or $deployPubKeyFound.Count -eq 0) {
-        ssh-keygen -b 4096 -t rsa -f $deploySshKeyFile
+        if ($settings.gitRepo.sshUrl -ilike "*.dev.azure.com*") {
+            ssh-keygen -C $settings.gitRepo.teamOrUser -f $deploySshKeyFile
+        }
+        else {
+            ssh-keygen -b 4096 -t rsa -f $deploySshKeyFile
+        }
         az keyvault secret set --vault-name $settings.kv.name --name $settings.gitRepo.deployPrivateKey --file $deploySshKeyFile | Out-Null
         az keyvault secret set --vault-name $settings.kv.name --name $settings.gitRepo.deployPublicKey --file $sshPubKeyFile | Out-Null
     }
@@ -483,7 +488,12 @@ UsingScope("Set deployment key") {
     $settings.gitRepo["deployPrivateKeyFile"] = TranslateToLinuxFilePath -FilePath $deploySshKeyFile
     $settings.gitRepo["repo"] = $settings.gitRepo.sshUrl
 
-    LogStep -Message "Add ssh public key to 'https://github.com/$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name)/settings/keys'"
+    if ($settings.gitRepo.sshUrl -like "*.dev.azure.com*") {
+        LogStep -Message "Add ssh public key to 'https://dev.azure.com/biosoftworks/_usersSettings/keys'"
+    }
+    else {
+        LogStep -Message "Add ssh public key to 'https://github.com/$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name)/settings/keys'"
+    }
     $pubDeployKeyData = (Get-Content $sshPubKeyFile -Encoding Ascii)
     $pubDeployKeyData = $pubDeployKeyData.Trim().Replace("\", "\\")
     Write-Host $pubDeployKeyData

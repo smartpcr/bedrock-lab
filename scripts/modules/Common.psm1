@@ -77,3 +77,37 @@ function TranslateToLinuxFilePath() {
 
     return $FilePath
 }
+
+function StipSpaces() {
+    param(
+        [ValidateSet("key", "pub")]
+        [string]$FileType,
+        [string]$FilePath
+    )
+
+    $fileContent = Get-Content $FilePath -Raw
+    $fileContent = $fileContent.Replace("`r", "")
+    if ($FileType -eq "key") {
+        # 3 parts
+        $parts = $fileContent.Split("`n")
+        if ($parts.Count -gt 3) {
+            $builder = New-Object System.Text.StringBuilder
+            $lineNumber = 0
+            $parts | ForEach-Object {
+                if ($lineNumber -eq 0) {
+                    $builder.AppendLine($_) | Out-Null
+                }
+                elseif ($lineNumber -eq $parts.Count - 1) {
+                    $builder.Append("`n$_") | Out-Null
+                }
+                else {
+                    $builder.Append($_) | Out-Null
+                }
+                $lineNumber++
+            }
+            $fileContent = $builder.ToString()
+        }
+    }
+
+    $fileContent | Out-File $FilePath -Encoding ascii -Force
+}

@@ -4,7 +4,7 @@ global:
     name: xiaodoli-bedrock-lab
     location: westus2
 gitRepo:
-  teamOrUser: smartpcr
+  teamOrUser: lingxd@gmail.com
   name: git-deploy
   sshUrl: git@ssh.dev.azure.com:v3/biosoftworks/git-deploy/git-deploy
   deployPrivateKey: flux-deploy-key
