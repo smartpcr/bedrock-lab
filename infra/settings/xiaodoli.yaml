@@ -1,11 +1,12 @@
 global:
-  subscriptionName: "xiaodoli"
+  subscriptionName: "Compliance_Tools_Eng"
   resourceGroup:
     name: xiaodoli-bedrock-lab
     location: westus2
 gitRepo:
   teamOrUser: smartpcr
   name: git-deploy
+  sshUrl: git@ssh.dev.azure.com:v3/biosoftworks/git-deploy/git-deploy
   deployPrivateKey: flux-deploy-key
   deployPublicKey: flux-deploy-pub
 kv:
@@ -24,8 +25,8 @@ aks:
   serverSecret: AppCenter-AKS-AADAppPwd
   clientApp: App Center AKS (non-production)
   clusterName: xiaodoli-bedrock-lab
-  nodeCount: 2
-  vmSize: "Standard_D2s_v3"
+  nodeCount: 3
+  vmSize: "Standard_D4s_v3"
   dnsPrefix: bedrock-lab
   virtualNetwork: bedrock-vnet
   ssh:

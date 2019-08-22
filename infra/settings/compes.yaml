@@ -9,6 +9,7 @@ global:
 gitRepo:
   teamOrUser: smartpcr
   name: git-deploy
+  sshUrl: git@github.com:smartpcr/git-deploy.git
   deployPrivateKey: flux-deploy-key
   deployPublicKey: flux-deploy-pub
 kv:

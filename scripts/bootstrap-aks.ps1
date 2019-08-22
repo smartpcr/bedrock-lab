@@ -481,7 +481,7 @@ UsingScope("Set deployment key") {
     }
 
     $settings.gitRepo["deployPrivateKeyFile"] = TranslateToLinuxFilePath -FilePath $deploySshKeyFile
-    $settings.gitRepo["repo"] = "git@github.com:$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name).git"
+    $settings.gitRepo["repo"] = $settings.gitRepo.sshUrl
 
     LogStep -Message "Add ssh public key to 'https://github.com/$($settings.gitRepo.teamOrUser)/$($settings.gitRepo.name)/settings/keys'"
     $pubDeployKeyData = (Get-Content $sshPubKeyFile -Encoding Ascii)
