@@ -1,6 +1,6 @@
 
 param(
-    [string] $SettingName = "aamva"
+    [string] $SettingName = "xiaodoli"
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,12 +65,16 @@ UsingScope("Open dashboard") {
     $isUnix = $PSVersionTable.Contains("Platform") -and ($PSVersionTable.Platform -eq "Unix")
     $isMac = $PSVersionTable.Contains("Platform") -and ($PSVersionTable.OS.Contains("Darwin"))
     $dashboardUrl = "http://localhost:$($Port)/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!/overview?namespace=default"
+    Write-Host $dashboardUrl
     if ($isMac -or $isUnix) {
-        Invoke-Expression "kubectl proxy --port=$Port &"
+        kubectl proxy --port=$Port &
         & open $dashboardUrl
     }
-    else {
+    elseif ($isWindowsOs) {
         Start-Process powershell "kubectl proxy --port=$Port"
         Start-Process $dashboardUrl
+    }
+    else {
+        throw "Unsupported OS"
     }
 }
