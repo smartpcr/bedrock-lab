@@ -67,8 +67,8 @@ UsingScope("Open dashboard") {
     $dashboardUrl = "http://localhost:$($Port)/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!/overview?namespace=default"
     Write-Host $dashboardUrl
     if ($isMac -or $isUnix) {
-        kubectl proxy --port=$Port &
-        & open $dashboardUrl
+        Invoke-Expression "kubectl proxy --port=$Port &"
+        Invoke-Expression "& open $dashboardUrl"
     }
     elseif ($isWindowsOs) {
         Start-Process powershell "kubectl proxy --port=$Port"
