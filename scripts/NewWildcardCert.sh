@@ -3,6 +3,6 @@ export AZUREDNS_SUBSCRIPTIONID="{{.Values.global.subscriptionId}}"
 export AZUREDNS_TENANTID="{{.Values.global.tenantId}}"
 export AZUREDNS_APPID="{{.Values.terraform.spn.appId}}"
 export AZUREDNS_CLIENTSECRET="{{.Values.terraform.spn.pwd}}"
-export DOMAIN="*{{.Values.dns.name}}"
+export DOMAIN="*.{{.Values.dns.name}}"
 
-acme.sh --issue --dns dns_azure -d $DOMAIN --debug
+ ~/.acme.sh/acme.sh --issue --dns dns_azure -d $DOMAIN --debug
