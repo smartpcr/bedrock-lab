@@ -139,7 +139,11 @@ echo "Install fluxctl"
 if [ -f "/usr/binfluxctl" ]; then
     echo "fluxctl already installed"
 else
-    sudo brew install fluxctl
+    # sudo brew install fluxctl
+    cd ~/
+    git clone https://aur.archlinux.org/fluxctl-bin.git
+    cd fluxctl-bin
+    makepkg -si
 fi
 
 
@@ -186,4 +190,12 @@ else
     sudo apt-get install docker.io
     sudo systemctl enable docker.service
     sudo systemctl start docker
+fi
+
+echo "install acme.sh"
+if [ -f "~/.acme.sh/acme.sh" ]; then
+    echo "acme.sh is already installed"
+else
+    curl https://get.acme.sh | sh
+    source ~/.zshrc
 fi

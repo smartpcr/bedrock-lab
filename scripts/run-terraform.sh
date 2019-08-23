@@ -7,11 +7,6 @@ export ARM_CLIENT_SECRET="{{.Values.terraform.spn.pwd}}"
 echo "terraform init -backend-config=\"backend.tfvars\""
 terraform init -backend-config="backend.tfvars"
 
-export storage_account_name="{{.Values.terraform.backend.storageAccount}}"
-export container_name="{{.Values.terraform.backend.containerName}}"
-export key="{{.Values.terraform.backend.key}}"
-export access_key="{{.Values.terraform.backend.accessKey}}"
-
 echo "terraform plan -var-file=\"terraform.tfvars\""
 terraform plan -var-file="terraform.tfvars"
 

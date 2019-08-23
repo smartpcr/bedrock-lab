@@ -624,4 +624,10 @@ UsingScope("Setup terraform variables") {
     $terraformShellFile = Join-Path $terraformOutputFolder "run-terraform.sh"
     $scriptContent | Out-File $terraformShellFile -Encoding ascii -Force | Out-Null
     Invoke-Expression "chmod +x `"$terraformShellFile`""
+
+    $newCertScriptContent = Get-Content (Join-Path $scriptFolder "NewWildcardCert.sh") -Raw
+    $newCertScriptContent = Set-YamlValues -ValueTemplate $newCertScriptContent -Settings $settings
+    $newCertShellFile = Join-Path $terraformOutputFolder "CreateWildcardSslCert.sh"
+    $newCertScriptContent | Out-File $newCertShellFile -Encoding ascii -Force | Out-Null
+    Invoke-Expression "chmod +x `"$newCertShellFile`""
 }
