@@ -50,7 +50,7 @@ acr:
   email: xiaodoli@microsoft.com
   auth_secret: compes-bedrock-acr-auth
 dns:
-  name: dev.1es.io
+  name: 1cs.io
   caaIssuer: letsencrypt.org # use microsoft when CA is internal
 cosmosdb:
   account: compes-bedrock-lab

@@ -54,10 +54,11 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 | 9 | dns zone | done | |
 | 10 | cosmos-db | done | consistency level was using default values for `Session`, but validation failed, reapplaying takes > 10 min! |
 | 11 | user assigned identity and required permissions | done | takes a long time till identity is propagated and available for role assignment |
-| 12 | app-insights | done | |
+| 12 | app-insights | in progress | |
 | 13 | kv backup/master | done | enable soft delete, add delete lock, sync and pre-populate secrets/certs |
 | 14 | acr backup/master | done | add delete lock, sync and pre-populate base docker images, infra images |
 | 15 | acr | done | store docker-registry-json in kv |
+| 16 | combine acr and aks-gitops | in progress | wait till acr, aks are done, then create k8s secret to store acr credential |
 
 ### HDL for infra
 | order | HDL component | status | notes |
@@ -85,5 +86,6 @@ _note: execute scripts in mac or linux, there are some gliches with WSL_
 ### build script to translate HDL to yamls
 | order | task | status |
 | -- | -- | -- |
-| 1 | ADO CI/CD pipeline | no |
-| 2 | support ADO git repo | no |
+| 1 | Ensure ADO git repo can be synced by flux | done |
+| 2 | run fab in ADO pipeline | no | trigger new pipeline, accept image tag input, update HLD with new image tag, run fab install/generate, push manifest to another repo |
+| 2 | run integration tests in ADO pipeline  | no |  webhook to trigger ADO pipeline and run integration tests
