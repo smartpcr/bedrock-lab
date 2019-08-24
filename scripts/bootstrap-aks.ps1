@@ -630,4 +630,9 @@ UsingScope("Setup terraform variables") {
     $newCertShellFile = Join-Path $terraformOutputFolder "CreateWildcardSslCert.sh"
     $newCertScriptContent | Out-File $newCertShellFile -Encoding ascii -Force | Out-Null
     Invoke-Expression "chmod +x `"$newCertShellFile`""
+
+    $createSslInK8sFile = Join-Path $scriptFolder "Create-SslCertInK8s.ps1"
+    $createSslInK8sScript = Join-Path $terraformOutputFolder "CreateSslCertInK8s.ps1"
+    Copy-Item $createSslInK8sFile -Destination $createSslInK8sScript -Force
+    Invoke-Expression "chmod +x `"$createSslInK8sFile`""
 }
