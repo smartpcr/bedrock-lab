@@ -621,9 +621,10 @@ UsingScope("Setup terraform variables") {
 
     # TODO: run this in terraform after aks is created
     $createSslInK8sFile = Join-Path $scriptFolder "Create-SslCertInK8s.ps1"
-    $createSslInK8sScript = Join-Path $terraformOutputFolder "CreateSslCertInK8s.ps1"
-    Copy-Item $createSslInK8sFile -Destination $createSslInK8sScript -Force
-    Invoke-Expression "chmod +x `"$createSslInK8sFile`""
+    LogInfo -Message "Run ssl cert generation '$createSslInK8sFile'"
+    # $createSslInK8sScript = Join-Path $terraformOutputFolder "CreateSslCertInK8s.ps1"
+    # Copy-Item $createSslInK8sFile -Destination $createSslInK8sScript -Force
+    # Invoke-Expression "chmod +x `"$createSslInK8sFile`""
 }
 
 UsingScope("Done") {

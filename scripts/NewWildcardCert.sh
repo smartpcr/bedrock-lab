@@ -10,7 +10,7 @@ export KUBECONFIG="./output/admin_kube_config"
  ~/.acme.sh/acme.sh --issue --dns dns_azure -d $DOMAIN --debug
 
 
-[ -f "~/.acme.sh/\\$DOMAIN" ]; then
+if [ -f "~/.acme.sh/\\$DOMAIN" ]; then
     echo "found domain cert folder, add them to key vault"
     CLEAN_DOMAIN=$(echo $DOMAIN | sed 's/*.//')
     CA_CERT_SECRET_NAME="$(echo $CLEAN_DOMAIN | sed 's/\./-/')-ca-cert"

@@ -1,5 +1,6 @@
 param(
-    [string]$SettingName = "xiaodoli"
+    [string]$SettingName = "xiaodoli",
+    [string]$BackupVaultName = "xiaodong-kv"
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,8 +14,10 @@ $scriptFolder = Join-Path $gitRootFolder "scripts"
 if (-not (Test-Path $scriptFolder)) {
     throw "Invalid script folder '$scriptFolder'"
 }
-
+$infraFolder = Join-Path $gitRootFolder "infra"
+$settingsFolder = Join-Path $infraFolder "settings"
 $moduleFolder = Join-Path $scriptFolder "modules"
+
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
@@ -64,7 +67,7 @@ UsingScope("Ensure terraform spn") {
 
 
 UsingScope("Create SSL cert") {
-    $DomainName = $settings.dns.name
+    $DomainName = "*.$($settings.dns.name)"
     $VaultName = $settings.kv.name
     $certFile = "~/.acme.sh/\$($DomainName)/\$($DomainName).cer"
     $keyFile = "~/.acme.sh/\$($DomainName)/\$($DomainName).key"
@@ -93,6 +96,7 @@ type: kubernetes.io/tls
     [System.IO.File]::WriteAllText($sslCertYamlFile, $sslCertSecretYaml)
 
     az keyvault secret set --vault-name $VaultName --name $CertSecret --file $sslCertYamlFile | Out-Null
+    az keyvault secret set --vault-name $BackupVaultName --name $CertSecret --file $sslCertYamlFile | Out-Null
 
     $sslCertYamlSecret = az keyvault secret show --vault-name $VaultName --name $CertSecret | ConvertFrom-Json
     $sslCertYaml = $sslCertYamlSecret.value
