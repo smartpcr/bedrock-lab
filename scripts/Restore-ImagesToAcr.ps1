@@ -126,6 +126,8 @@ UsingScope("Restoring infra images") {
 
 
 UsingScope("Restoring svc images") {
+    $totalImagesSynced = 0
+    
     $svcImages.images | ForEach-Object {
         $imageName = $_.name
         $imageTag = $_.tag
