@@ -102,5 +102,25 @@ function TryGetSecret() {
         return $secret
     }
 
-    return $null 
+    return $null
+}
+
+function IsCertExists() {
+    param(
+        [string]$VaultName,
+        [string]$CertName
+    )
+
+    [array]$existingCerts = az keyvault certificate list --vault-name $VaultName --query "[?name=='$CertName']" | ConvertFrom-Json
+    return $null -ne $existingCerts -and $existingCerts.Count -gt 0
+}
+
+function IsSecretExists() {
+    param(
+        [string]$VaultName,
+        [string]$SecretName
+    )
+
+    [array]$existingSecrets = az keyvault secret list --vault-name $VaultName --query "[?name=='$SecretName']" | ConvertFrom-Json
+    return $null -ne $existingSecrets -and $existingSecrets.Count -gt 0
 }

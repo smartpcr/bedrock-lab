@@ -1,5 +1,6 @@
 certs/
 credential/
+secrets/
 log/
 temp/
 yamls/

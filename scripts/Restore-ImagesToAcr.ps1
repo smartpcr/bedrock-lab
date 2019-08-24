@@ -35,7 +35,7 @@ if (-not (Test-Path $tempFolder)) {
     New-Item $tempFolder -ItemType Directory -Force | Out-Null
 }
 
-InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AKS"
+InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Restore-ACR"
 
 UsingScope("retrieving settings") {
     $settingYamlFile = Join-Path $settingsFolder "$($SettingName).yaml"
@@ -167,6 +167,6 @@ UsingScope("Restoring svc images") {
         }
 
         $totalImagesSynced++
-        LogInfo -Message "Synced $totalImagesSynced of $($infraImages.images.Count) images"
+        LogInfo -Message "Synced $totalImagesSynced of $($svcImages.images.Count) images"
     }
 }
