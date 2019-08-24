@@ -19,14 +19,14 @@ function GetImagesWithTags() {
         LogInfo -Message "acr auth header: $SrcAcrAuthHeader"
     }
 
-    UsingScope("Get all images from '$SrcAcrName'") {
+    UsingScope("Get all repositories in '$SrcAcrName'") {
         # docker login $LoginServer -u $SpnAppId -p $SrcAcrPwd
         $imageCatalog = Invoke-RestMethod -Headers @{Authorization = ("Basic {0}" -f $SrcAcrAuthHeader) } -Method Get -Uri "https://$SrcAcrName.azurecr.io/v2/_catalog"
         $repositories = $imageCatalog.repositories
         LogInfo -Message "Total of $($repositories.Count) reposities found"
     }
 
-    UsingScope("Sync docker images from '$SrcAcrName' to '$TargetAcrName'") {
+    UsingScope("Scan repository in '$SrcAcrName'") {
         $totalImagesScanned = 0
         $imageDetails = New-Object System.Collections.ArrayList
 
