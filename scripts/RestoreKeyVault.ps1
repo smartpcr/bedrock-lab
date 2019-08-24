@@ -184,6 +184,10 @@ UsingScope("Import certs") {
 }
 
 UsingScope("Create k8s certs") {
+    LogStep -Message "Connect to AKS"
+    az aks get-credentials -g $settings.global.resourceGroup.name -n $settings.aks.clusterName --overwrite-existing --admin
+
+    LogStep -Message "Install certs to K8S"
     $k8sCertCreated = 0
     $certs.certs | ForEach-Object {
         [string]$certName = $_
