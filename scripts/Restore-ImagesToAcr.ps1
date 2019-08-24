@@ -25,7 +25,7 @@ $moduleFolder = Join-Path $scriptFolder "modules"
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
 Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
-Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
+Import-Module (Join-Path $moduleFolder "AcrUtil.psm1") -Force
 $tempFolder = Join-Path $scriptFolder "temp"
 if (-not (Test-Path $tempFolder)) {
     New-Item $tempFolder -ItemType Directory -Force | Out-Null
@@ -57,6 +57,9 @@ UsingScope("login") {
 }
 
 UsingScope("Retrieving acr pwd") {
+    if ($infraImages.backup.subscription -ne $settings.global.subscriptionName) {
+        LoginAzureAsUser -SubscriptionName $infraImages.backup.subscription | Out-Null
+    }
     $SrcAcrName = $infraImages.backup.acrName
     az acr login -n $SrcAcrName | Out-Null
     az acr update -n $SrcAcrName --admin-enabled true | Out-Null
@@ -64,6 +67,9 @@ UsingScope("Retrieving acr pwd") {
     $SrcAcrPwd = $SrcAcrCredential.passwords[0].value
     $SrcAcrAuthHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($SrcAcrName):$($SrcAcrPwd)"))
 
+    if ($infraImages.backup.subscription -ne $settings.global.subscriptionName) {
+        LoginAzureAsUser -SubscriptionName $settings.global.subscriptionName | Out-Null
+    }
     $TgtAcrName = $settings.acr.name
     az acr login -n $TgtAcrName | Out-Null
     az acr update -n $TgtAcrName --admin-enabled true | Out-Null
@@ -72,36 +78,45 @@ UsingScope("Retrieving acr pwd") {
     $TgtAcrAuthHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($TgtAcrName):$($TgtAcrPwd)"))
 }
 
+UsingScope("Retrieving images from target acr") {
+   $imagesInTargetAcr = GetImagesWithTags -SubscriptionName $settings.global.subscriptionName -AcrName $settings.acr.name
+}
+
 UsingScope("Restoring infra images") {
     $totalImagesSynced = 0
-    
+
     $infraImages.images | ForEach-Object {
         $imageName = $_.name
         $imageTag = $_.tag
-
-        LogInfo -Message "Login to '$SrcAcrName'"
-        $SrcAcrPwd | docker login "$SrcAcrName.azurecr.io" --username $SrcAcrName --password-stdin | Out-Null
-
-        $SourceImage = "$($SrcAcrName).azurecr.io/$($imageName):$($imageTag)"
-        LogInfo -Message "Pulling image '$SourceImage'..."
-        docker pull $SourceImage
-        $TargetImage = "$($TgtAcrName).azurecr.io/$($imageName):$($imageTag)"
-        docker tag $SourceImage $TargetImage
-
-        LogInfo -Message "Login to '$TgtAcrName'"
-        $TgtAcrPwd | docker login "$TgtAcrName.azurecr.io" --username $TgtAcrName --password-stdin | Out-Null
-
-        LogInfo -Message "Pushing image '$TargetImage'..."
-        docker push $TargetImage
-
-        LogInfo -Message "Clearing image '$imageName' from disk"
-        $targetImageId = $(docker images -q --filter "reference=$TargetImage")
-        if ($targetImageId) {
-            docker image rm $targetImageId -f
+        $foundInTgtAcr = $imagesInTargetAcr | Where-Object { $_.name -eq $imageName -and $_.tag -eq $imageTag }
+        if ($null -ne $foundInTgtAcr -and $foundInTgtAcr.Count -eq 1) {
+            LogInfo "Image '$imageName' with tag '$imageTag' already available in acr '$TgtAcrName'"
         }
-        $sourceImageId = $(docker images -q --filter "reference=$SourceImage")
-        if ($sourceImageId) {
-            docker image rm $sourceImageId -f
+        else {
+            LogInfo -Message "Login to '$SrcAcrName'"
+            $SrcAcrPwd | docker login "$SrcAcrName.azurecr.io" --username $SrcAcrName --password-stdin | Out-Null
+
+            $SourceImage = "$($SrcAcrName).azurecr.io/$($imageName):$($imageTag)"
+            LogInfo -Message "Pulling image '$SourceImage'..."
+            docker pull $SourceImage
+            $TargetImage = "$($TgtAcrName).azurecr.io/$($imageName):$($imageTag)"
+            docker tag $SourceImage $TargetImage
+
+            LogInfo -Message "Login to '$TgtAcrName'"
+            $TgtAcrPwd | docker login "$TgtAcrName.azurecr.io" --username $TgtAcrName --password-stdin | Out-Null
+
+            LogInfo -Message "Pushing image '$TargetImage'..."
+            docker push $TargetImage
+
+            LogInfo -Message "Clearing image '$imageName' from disk"
+            $targetImageId = $(docker images -q --filter "reference=$TargetImage")
+            if ($targetImageId) {
+                docker image rm $targetImageId -f
+            }
+            $sourceImageId = $(docker images -q --filter "reference=$SourceImage")
+            if ($sourceImageId) {
+                docker image rm $sourceImageId -f
+            }
         }
 
         $totalImagesSynced++
@@ -114,30 +129,35 @@ UsingScope("Restoring svc images") {
     $svcImages.images | ForEach-Object {
         $imageName = $_.name
         $imageTag = $_.tag
-
-        LogInfo -Message "Login to '$SrcAcrName'"
-        $SrcAcrPwd | docker login "$SrcAcrName.azurecr.io" --username $SrcAcrName --password-stdin | Out-Null
-
-        $SourceImage = "$($SrcAcrName).azurecr.io/$($imageName):$($imageTag)"
-        LogInfo -Message "Pulling image '$SourceImage'..."
-        docker pull $SourceImage
-        $TargetImage = "$($TgtAcrName).azurecr.io/$($imageName):$($imageTag)"
-        docker tag $SourceImage $TargetImage
-
-        LogInfo -Message "Login to '$TgtAcrName'"
-        $TgtAcrPwd | docker login "$TgtAcrName.azurecr.io" --username $TgtAcrName --password-stdin | Out-Null
-
-        LogInfo -Message "Pushing image '$TargetImage'..."
-        docker push $TargetImage
-
-        LogInfo -Message "Clearing image '$imageName' from disk"
-        $targetImageId = $(docker images -q --filter "reference=$TargetImage")
-        if ($targetImageId) {
-            docker image rm $targetImageId -f
+        $foundInTgtAcr = $imagesInTargetAcr | Where-Object { $_.name -eq $imageName -and $_.tag -eq $imageTag }
+        if ($null -ne $foundInTgtAcr -and $foundInTgtAcr.Count -eq 1) {
+            LogInfo "Image '$imageName' with tag '$imageTag' already available in acr '$TgtAcrName'"
         }
-        $sourceImageId = $(docker images -q --filter "reference=$SourceImage")
-        if ($sourceImageId) {
-            docker image rm $sourceImageId -f
+        else {
+            LogInfo -Message "Login to '$SrcAcrName'"
+            $SrcAcrPwd | docker login "$SrcAcrName.azurecr.io" --username $SrcAcrName --password-stdin | Out-Null
+
+            $SourceImage = "$($SrcAcrName).azurecr.io/$($imageName):$($imageTag)"
+            LogInfo -Message "Pulling image '$SourceImage'..."
+            docker pull $SourceImage
+            $TargetImage = "$($TgtAcrName).azurecr.io/$($imageName):$($imageTag)"
+            docker tag $SourceImage $TargetImage
+
+            LogInfo -Message "Login to '$TgtAcrName'"
+            $TgtAcrPwd | docker login "$TgtAcrName.azurecr.io" --username $TgtAcrName --password-stdin | Out-Null
+
+            LogInfo -Message "Pushing image '$TargetImage'..."
+            docker push $TargetImage
+
+            LogInfo -Message "Clearing image '$imageName' from disk"
+            $targetImageId = $(docker images -q --filter "reference=$TargetImage")
+            if ($targetImageId) {
+                docker image rm $targetImageId -f
+            }
+            $sourceImageId = $(docker images -q --filter "reference=$SourceImage")
+            if ($sourceImageId) {
+                docker image rm $sourceImageId -f
+            }
         }
 
         $totalImagesSynced++
