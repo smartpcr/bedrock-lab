@@ -1,0 +1,11 @@
+backup:
+  resourceGroup: xiaodong-shared-rg
+  vaultName: xiaodong-kv
+  acrName: xiaodongacr
+images:
+  - name: product-catalog-api
+    tag: "370656"
+  - name: product-catalog-sync-job
+    tag: "585213"
+  - name: product-catalog-web
+    tag: "373647"

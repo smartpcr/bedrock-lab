@@ -1,0 +1,49 @@
+backup:
+  resourceGroup: xiaodong-shared-rg
+  vaultName: xiaodong-kv
+  acrName: xiaodongacr
+images:
+  - name: azsecpack
+    tag: "335686"
+  - name: dotnet-2.1-aspnetcore-runtime
+    tag: latest
+  - name: external-dns
+    tag: "720306"
+  - name: flexvolume
+    tag: "520855"
+  - name: fluentd-wd
+    tag: latest
+  - name: geneva-azsecpack
+    tag: "720310"
+  - name: geneva-fluentd
+    tag: "720310"
+  - name: geneva-mdm
+    tag: "720310"
+  - name: geneva-mdsd
+    tag: "720310"
+  - name: genevafluentd_td-agent
+    tag: latest
+  - name: genevamdm
+    tag: latest
+  - name: genevamdmstatsd
+    tag: latest
+  - name: genevamdsd
+    tag: latest
+  - name: genevasecpackinstall
+    tag: latest
+  - name: kube-gen
+    tag: latest
+  - name: kured
+    tag: "720307"
+  - name: linux-geneva-agent/metrics
+    tag: "720311"
+  - name: linux-geneva-agent/metrics-aksmsi
+    tag: "720311"
+  - name: linux-geneva-agent/metrics-telegraf
+    tag: "720311"
+  - name: nginx-ingress-controller
+    tag: "720305"
+  - name: secret-broker
+    tag: "720313"
+  - name: tiller
+    tag: "373203"
