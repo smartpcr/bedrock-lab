@@ -147,9 +147,12 @@ UsingScope("Ensure terraform spn") {
                 }
             }
             catch {
+
+            }
+            finally {
                 $totalRetries++
-                Write-Warning "Retry login...wait 10 sec"
-                Start-Sleep -Seconds 10
+                Write-Warning "Retry login...wait 30 sec"
+                Start-Sleep -Seconds 30
             }
         }
         if (!$loginIsSuccessful) {
@@ -621,4 +624,8 @@ UsingScope("Setup terraform variables") {
     $createSslInK8sScript = Join-Path $terraformOutputFolder "CreateSslCertInK8s.ps1"
     Copy-Item $createSslInK8sFile -Destination $createSslInK8sScript -Force
     Invoke-Expression "chmod +x `"$createSslInK8sFile`""
+}
+
+UsingScope("Done") {
+    Set-Location $gitRootFolder
 }

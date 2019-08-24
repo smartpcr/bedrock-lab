@@ -1,0 +1,106 @@
+global:
+  subscriptionName: "Compliance_Tools_Eng"
+  resourceGroup:
+    name: sace-bedrock-lab
+    location: westus2
+gitRepo:
+  teamOrUser: xiaodoli@microsoft.com
+  name: sace
+  sshUrl: git@ssh.dev.azure.com:v3/mseng/1ES/sace
+  deployPrivateKey: flux-deploy-key
+  deployPublicKey: flux-deploy-pub
+kv:
+  name: sace-bedrock-kv
+  reader: sace-bedrock-kv-reader
+terraform:
+  clientAppName: sace-bedrock-terraform-spn
+  clientSecret: sace-bedrock-terraform-spn-pwd
+  backend:
+    storageAccount: saceterraformstate
+    containerName: sace
+    key: tfstate
+aks:
+  reuseExistingAadApp: true
+  serverApp: App Center AKS AAD (non-production)
+  serverSecret: AppCenter-AKS-AADAppPwd
+  clientApp: App Center AKS (non-production)
+  clusterName: sace-bedrock-lab
+  nodeCount: 3
+  vmSize: "Standard_D4s_v3"
+  dnsPrefix: bedrock-lab
+  virtualNetwork: bedrock-vnet
+  ssh:
+    privateKey: "sace-bedrock-aks-ssh-key"
+    publicKey: "sace-bedrock-aks-ssh-pub"
+    privateKeyPwd: "sace-bedrock-aks-ssh-key-pwd"
+  owners:
+    - name: brifl@microsoft.com
+      type: user
+    - name: xiaodoli@microsoft.com
+      type: user
+    - name: mshmelev@microsoft.com
+      type: user
+    - name: asmohan@microsoft.com
+      type: user
+  contributors:
+    - name: "Compliance Tooling Team"
+      type: group
+  readers:
+    - name: "1cs dri"
+      type: group
+acr:
+  name: xiaodongacr
+  email: xiaodoli@microsoft.com
+  auth_secret: sace-bedrock-acr-auth
+dns:
+  name: 1es.io
+  caaIssuer: letsencrypt.org # use microsoft when CA is internal
+cosmosdb:
+  account: sace-bedrock-lab
+  authKey: sace-bedrock-lab-authkey
+  consistency: Strong
+  failOverRegion: eastus
+  enableFirewallRules: false
+  corpIpRanges: 0.0.0.0,104.42.195.92,40.76.54.131,52.176.6.30,52.169.50.45,52.187.184.26,24.17.206.116
+  api: SQL
+  db: product-catalog
+  collections:
+    - name: "policy-ado-snapshot"
+      partition: "/partitionKey"
+      throughput: 1000
+    - name: "policy-catalog"
+    - name: "policy-events"
+      partition: "/partitionKey"
+    - name: "policy-events-error"
+      partition: "/partitionKey"
+    - name: "policy-events-lease"
+    - name: "policy-extension"
+      partition: "/partitionKey"
+    - name: "policy-install"
+      partition: "/partitionKey"
+    - name: "policy-installerror"
+      partition: "/partitionKey"
+    - name: "policy-refresh"
+      partition: "/partitionKey"
+    - name: "policy-refresh-error"
+      partition: "/partitionKey"
+    - name: "policy-refresh-lease"
+    - name: "policy-snapshots"
+      partition: "/partitionKey"
+      throughput: 1000
+    - name: "policy-snapshots-error"
+      partition: "/partitionKey"
+    - name: "policy-snapshots-lease"
+    - name: "policy-subscription-registry"
+      partition: "/id"
+    - name: "policy-catalog"
+    - name: "products"
+    - name: "ps"
+      partition: "/partitionKey"
+    - name: "ps-lease"
+      partition: "/id"
+appInsights:
+  name: sace-bedrock-ai
+  secrets:
+    instrumentationKey: sace-bedrock-ai-instrumentation-key
+    appId: sace-bedrock-ai-app-id
