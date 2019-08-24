@@ -49,7 +49,7 @@ aks:
     - name: "1cs dri"
       type: group
 acr:
-  name: xiaodongacr
+  name: sacebedrockacr
   email: xiaodoli@microsoft.com
   auth_secret: sace-bedrock-acr-auth
 dns:
