@@ -17,12 +17,7 @@ if (-not (Test-Path $scriptFolder)) {
 $infraFolder = Join-Path $gitRootFolder "infra"
 $settingsFolder = Join-Path $infraFolder "settings"
 $bootstrapFolder = Join-Path $infraFolder "bootstrap"
-
 $moduleFolder = Join-Path $scriptFolder "modules"
-Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
-Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
-Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
-Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
 $tempFolder = Join-Path $scriptFolder "temp"
 if (-not (Test-Path $tempFolder)) {
     New-Item $tempFolder -ItemType Directory -Force | Out-Null
@@ -31,6 +26,12 @@ $tempFolder = Join-Path $tempFolder $SettingName
 if (-not (Test-Path $tempFolder)) {
     New-Item $tempFolder -ItemType Directory -Force | Out-Null
 }
+
+Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
+Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
+Import-Module (Join-Path $moduleFolder "YamlUtil.psm1") -Force
+Import-Module (Join-Path $moduleFolder "VaultUtil.psm1") -Force
+
 
 InitializeLogger -ScriptFolder $scriptFolder -ScriptName "Setup-AKS"
 

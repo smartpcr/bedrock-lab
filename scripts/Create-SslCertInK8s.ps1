@@ -17,6 +17,14 @@ if (-not (Test-Path $scriptFolder)) {
 $infraFolder = Join-Path $gitRootFolder "infra"
 $settingsFolder = Join-Path $infraFolder "settings"
 $moduleFolder = Join-Path $scriptFolder "modules"
+$tempFolder = Join-Path $scriptFolder "temp"
+if (-not (Test-Path $tempFolder)) {
+    New-Item $tempFolder -ItemType Directory -Force | Out-Null
+}
+$tempFolder = Join-Path $tempFolder $SettingName
+if (-not (Test-Path $tempFolder)) {
+    New-Item $tempFolder -ItemType Directory -Force | Out-Null
+}
 
 Import-Module (Join-Path $moduleFolder "Logging.psm1") -Force
 Import-Module (Join-Path $moduleFolder "Common.psm1") -Force
@@ -92,7 +100,7 @@ data:
 type: kubernetes.io/tls
 "@
 
-    $sslCertYamlFile = "$($CertSecret).secret"
+    $sslCertYamlFile = Join-Path $tempFolder "$($CertSecret).secret"
     [System.IO.File]::WriteAllText($sslCertYamlFile, $sslCertSecretYaml)
 
     az keyvault secret set --vault-name $VaultName --name $CertSecret --file $sslCertYamlFile | Out-Null
@@ -100,7 +108,7 @@ type: kubernetes.io/tls
 
     $sslCertYamlSecret = az keyvault secret show --vault-name $VaultName --name $CertSecret | ConvertFrom-Json
     $sslCertYaml = $sslCertYamlSecret.value
-    $genevaSslCertYamlFile = "$($CertSecret).yaml"
+    $genevaSslCertYamlFile = Join-Path $tempFolder "$($CertSecret).yaml"
     $sslCertYaml | Out-File $genevaSslCertYamlFile -Encoding ascii
     kubectl apply -f $genevaSslCertYamlFile
 
