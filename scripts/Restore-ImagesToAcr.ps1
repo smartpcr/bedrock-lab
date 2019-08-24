@@ -17,7 +17,6 @@ if (-not (Test-Path $scriptFolder)) {
 }
 $infraFolder = Join-Path $gitRootFolder "infra"
 $settingsFolder = Join-Path $infraFolder "settings"
-$bootstrapFolder = Join-Path $infraFolder "bootstrap"
 $imagesFolder = Join-Path $settingsFolder "images"
 $infraImagesYamlFile = Join-Path $imagesFolder "infra.yaml"
 $svcImagesYamlFile = Join-Path $imagesFolder "svc.yaml"
@@ -65,7 +64,7 @@ UsingScope("Retrieving acr pwd") {
     $SrcAcrPwd = $SrcAcrCredential.passwords[0].value
     $SrcAcrAuthHeader = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($SrcAcrName):$($SrcAcrPwd)"))
 
-    $TgtAcrName = $settings.kv.name
+    $TgtAcrName = $settings.acr.name
     az acr login -n $TgtAcrName | Out-Null
     az acr update -n $TgtAcrName --admin-enabled true | Out-Null
     $TgtAcrCredential = az acr credential show -n $TgtAcrName | ConvertFrom-Json
@@ -74,6 +73,8 @@ UsingScope("Retrieving acr pwd") {
 }
 
 UsingScope("Restoring infra images") {
+    $totalImagesSynced = 0
+    
     $infraImages.images | ForEach-Object {
         $imageName = $_.name
         $imageTag = $_.tag
