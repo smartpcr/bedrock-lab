@@ -185,7 +185,25 @@ UsingScope("Import certs") {
 
 UsingScope("Create k8s certs") {
     $k8sCertCreated = 0
+    $certs.certs | ForEach-Object {
+        [string]$certName = $_
+        if ($certName.EndsWith("-Managed")) {
+            $certName = $certName.Substring(0, $certName.Length - "-Managed".Length)
+        }
+        $k8sSecret = $certName.ToLowerInvariant()
+        if ($k8sSecret -like "*geneva*") {
+            $dataCrt = "gcscert.pem"
+            $dataKey = "gcskey.pem"
+        }
+        else {
+            $dataCrt = "tls.crt"
+            $dataKey = "tls.key"
+        }
+        CreateK8sSecretFromCert -CertName $certName -VaultName $settings.kv.name -K8sSecretName $k8sSecret -CertDataKey $dataCrt -KeyDataKey $dataKey
 
+        $k8sCertCreated++
+        LogInfo -Message "$k8sCertCreated of $($certs.certs.Count) certs installed in k8s"
+    }
 }
 
 LogInfo "Done!"
