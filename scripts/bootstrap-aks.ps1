@@ -76,21 +76,6 @@ UsingScope("Ensure kv") {
     }
 }
 
-# UsingScope("Ensure identity for kv reader") {
-#     LogStep -Message "Ensure user-assigned identity '$($settings.kv.reader)' is created in resource group '$($settings.global.resourceGroup.name)'"
-#     [array]$existingIdentities = az identity list --resource-group $settings.global.resourceGroup.name --query "[?name=='$($settings.kv.reader)']" | ConvertFrom-Json
-#     if ($null -eq $existingIdentities -or $existingIdentities.Count -eq 0) {
-#         LogStep -Message "Creating new user-assigned identity '$($settings.kv.reader)'"
-#         $identity = az identity create -g $settings.global.resourceGroup.name -n $settings.kv.reader | ConvertFrom-Json
-
-#         $scopeIds = New-Object System.Collections.ArrayList
-#         $rgId = $(az group show --name $settings.global.resourceGroup.name | ConvertFrom-Json).id
-#         $scopeIds.Add($rgId) | Out-Null
-#         $mcRgName = "MC_$($settings.global.resourceGroup.name)_$($settings.aks.clusterName)_$($settings.global.resourceGroup.location)"
-#         $mcRgId = $(az group create --name $mcRgName --location $settings.global.resourceGroup.location | ConvertFrom-Json).id
-#     }
-# }
-
 UsingScope("Ensure terraform spn") {
     [array]$terraformSpnsFound = az ad sp list --display-name $settings.terraform.clientAppName | ConvertFrom-Json
     [string]$terraformSpnPwdValue = $null
