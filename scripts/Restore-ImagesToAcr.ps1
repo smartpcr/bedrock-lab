@@ -79,7 +79,11 @@ UsingScope("Retrieving acr pwd") {
 }
 
 UsingScope("Retrieving images from target acr") {
-   $imagesInTargetAcr = GetImagesWithTags -SubscriptionName $settings.global.subscriptionName -AcrName $settings.acr.name
+    $imagesInTargetAcr = GetImagesWithTags -SubscriptionName $settings.global.subscriptionName -AcrName $settings.acr.name
+    if ($null -eq $imagesInTargetAcr) {
+        $imagesInTargetAcr = New-Object System.Collections.ArrayList
+    }
+    LogInfo -Message "Total of $($imagesInTargetAcr.Count) images found"
 }
 
 UsingScope("Restoring infra images") {
@@ -127,7 +131,7 @@ UsingScope("Restoring infra images") {
 
 UsingScope("Restoring svc images") {
     $totalImagesSynced = 0
-    
+
     $svcImages.images | ForEach-Object {
         $imageName = $_.name
         $imageTag = $_.tag
