@@ -42,21 +42,23 @@ module "aks-gitops" {
   aks_readers      = "${var.aks_readers}"
 
   # flux
-  enable_flux          = "${var.enable_flux}"
-  flux_recreate        = "${var.flux_recreate}"
-  kubeconfig_recreate  = "${var.kubeconfig_recreate}"
-  gc_enabled           = "${var.gc_enabled}"
-  acr_enabled          = "${var.acr_enabled}"
-  gitops_ssh_url       = "${var.gitops_ssh_url}"
-  gitops_ssh_key       = "${var.gitops_ssh_key}"
-  gitops_path          = "${var.gitops_path}"
-  gitops_poll_interval = "${var.gitops_poll_interval}"
-  gitops_url_branch    = "${var.gitops_url_branch}"
+  enable_flux               = "${var.enable_flux}"
+  flux_recreate             = "${var.flux_recreate}"
+  kubeconfig_recreate       = "${var.kubeconfig_recreate}"
+  gc_enabled                = "${var.gc_enabled}"
+  acr_enabled               = "${var.acr_enabled}"
+  gitops_ssh_url            = "${var.gitops_ssh_url}"
+  gitops_ssh_key            = "${var.gitops_ssh_key}"
+  gitops_path               = "${var.gitops_path}"
+  gitops_poll_interval      = "${var.gitops_poll_interval}"
+  gitops_url_branch         = "${var.gitops_url_branch}"
+  create_helm_operator      = "${var.create_helm_operator}"
+  create_helm_operator_crds = "${var.create_helm_operator_crds}"
 
   # kv-reader
-  vault_name                      = "${var.vault_name}"
-  vault_reader_identity           = "${var.vault_reader_identity}"
-  aks_cluster_spn_name            = "${var.aks_cluster_spn_name}"
+  vault_name            = "${var.vault_name}"
+  vault_reader_identity = "${var.vault_reader_identity}"
+  aks_cluster_spn_name  = "${var.aks_cluster_spn_name}"
 }
 
 module "acr" {
