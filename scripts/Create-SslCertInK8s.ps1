@@ -1,5 +1,5 @@
 param(
-    [string]$SettingName = "xiaodoli",
+    [string]$SettingName = "sace",
     [string]$BackupVaultName = "xiaodong-kv"
 )
 

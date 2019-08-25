@@ -1,6 +1,6 @@
 
 param(
-    [string]$SettingName = "xiaodoli"
+    [string]$SettingName = "sace"
 )
 
 
@@ -92,7 +92,7 @@ UsingScope("Restoring infra images") {
     $infraImages.images | ForEach-Object {
         $imageName = $_.name
         $imageTag = $_.tag
-        $foundInTgtAcr = $imagesInTargetAcr | Where-Object { $_.name -eq $imageName -and $_.tag -eq $imageTag }
+        [array] $foundInTgtAcr = $imagesInTargetAcr | Where-Object { $_.name -eq $imageName -and $_.tag -eq $imageTag }
         if ($null -ne $foundInTgtAcr -and $foundInTgtAcr.Count -eq 1) {
             LogInfo "Image '$imageName' with tag '$imageTag' already available in acr '$TgtAcrName'"
         }

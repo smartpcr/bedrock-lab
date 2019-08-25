@@ -5,6 +5,8 @@ backup:
 images:
   - name: azsecpack
     tag: "335686"
+  - name: defaultbackend
+    tag: "720305"
   - name: dotnet-2.1-aspnetcore-runtime
     tag: latest
   - name: external-dns
