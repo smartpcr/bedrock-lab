@@ -1,7 +1,7 @@
 
 param(
     [string]$SettingName = "sace",
-    [array]$AdditionK8sNamespaces = @("nginx", "monitoring")
+    [array]$AdditionK8sNamespaces = @("ingress-nginx", "monitoring", "dns", "flux")
 )
 
 $ErrorActionPreference = "Stop"
@@ -40,14 +40,18 @@ UsingScope("login") {
     $settings.global["subscriptionId"] = $azAccount.id
     $settings.global["tenantId"] = $azAccount.tenantId
     LogStep -Message "Logged in as user '$($azAccount.name)'"
+
+    LogStep -Message "Connect to aks"
+    az aks get-credentials -g $settings.global.resourceGroup.name -n $settings.aks.clusterName --overwrite-existing --admin
 }
 
 
 $acrCredential = az acr credential show -n $AcrName | ConvertFrom-Json
-[array]$acrPwdSecret = az keyvault secret list --vault-name $VaultName --query "[?id=='https://$($VaultName).vault.azure.net/secrets/$($AcrName)-pwd']" | ConvertFrom-Json
+[array]$acrPwdSecrets = az keyvault secret list --vault-name $VaultName --query "[?id=='https://$($VaultName).vault.azure.net/secrets/$($AcrName)-pwd']" | ConvertFrom-Json
 $NeedUpdate = $true
-if ($null -ne $acrPwdSecret -and $acrPwdSecret.Count -eq 1) {
-    if ($acrPwdSecret[0].value -eq $acrCredential.passwords[0].value) {
+if ($null -ne $acrPwdSecrets -and $acrPwdSecrets.Count -eq 1) {
+    $acrPwdSecret = az keyvault secret show --vault-name $VaultName --name "$($AcrName)-pwd" | ConvertFrom-Json
+    if ($acrPwdSecret.value -eq $acrCredential.passwords[0].value) {
         $NeedUpdate = $false
     }
 }

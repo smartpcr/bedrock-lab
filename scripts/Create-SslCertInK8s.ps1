@@ -44,6 +44,9 @@ UsingScope("login") {
     $settings.global["subscriptionId"] = $azAccount.id
     $settings.global["tenantId"] = $azAccount.tenantId
     LogStep -Message "Logged in as user '$($azAccount.name)'"
+
+    LogStep -Message "Connect to aks"
+    az aks get-credentials -g $settings.global.resourceGroup.name -n $settings.aks.clusterName --overwrite-existing --admin
 }
 
 
@@ -149,4 +152,5 @@ type: Opaque
 
     $k8sSecret | kubectl apply --namespace default -f -
     $k8sSecret | kubectl apply --namespace nginx -f -
+    $k8sSecret | kubectl apply --namespace dns -f -
 }
