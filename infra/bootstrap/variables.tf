@@ -188,7 +188,7 @@ variable "gitops_ssh_key" {
 
 variable "gitops_path" {
   type    = "string"
-  default = ""
+  default = "generated"
 }
 
 variable "gitops_url_branch" {
