@@ -199,13 +199,13 @@ variable "gitops_url_branch" {
 variable "create_helm_operator" {
   type        = "string"
   description = "create helm operator"
-  default     = "false"
+  default     = "true"
 }
 
 variable "create_helm_operator_crds" {
   type        = "string"
   description = "create CRDs associated with helm operator"
-  default     = "false"
+  default     = "true"
 }
 
 ###########################
