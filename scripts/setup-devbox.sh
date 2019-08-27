@@ -7,7 +7,7 @@ sudo sudo apt-get install -y build-essential make cmake scons curl git \
     ruby autoconf automake autoconf-archive \
     gettext libtool flex bison \
     libbz2-dev libcurl4-openssl-dev \
-    libexpat-dev libncurses-dev socat 
+    libexpat-dev libncurses-dev socat
 
 echo "Installing linuxbrew"
 if [ -f "/usr/bin/brew" ]; then
@@ -140,10 +140,11 @@ if [ -f "/usr/binfluxctl" ]; then
     echo "fluxctl already installed"
 else
     # sudo brew install fluxctl
-    cd ~/
-    git clone https://aur.archlinux.org/fluxctl-bin.git
-    cd fluxctl-bin
-    makepkg -si
+    sudo apt update
+    sudo apt install snapd
+
+    # snapd not yet supported on WSL
+    sudo snap install fluxctl
 fi
 
 

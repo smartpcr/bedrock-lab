@@ -193,7 +193,7 @@ variable "gitops_path" {
 
 variable "gitops_url_branch" {
   type    = "string"
-  default = "master"
+  default = "releases/poc"
 }
 
 variable "create_helm_operator" {
